@@ -17,6 +17,8 @@ def get_best_solution(solutions):
 
 
 def solve_it(input_data):
+    print('-'*60)
+
     # Modify this code to run your optimization algorithm
     start = dt.datetime.now()
     # parse the input
@@ -41,8 +43,8 @@ def solve_it(input_data):
         solution_dynamic_programing.solve()
         print(solution_dynamic_programing)
         best_solution = solution_dynamic_programing
+        print('Solved with Dynamic')
     except Exception as e:
-        print(e)
         solutions = []
         for method in SolutionGreedy.possible_solving_method:
             solver = SolutionGreedy(capacity_of_knapsack, items_list, method)
@@ -50,6 +52,7 @@ def solve_it(input_data):
             print(solver)
             solutions.append(solver)
         best_solution = get_best_solution(solutions)
+        print('Solved with Dynamic')
 
     output_data = best_solution.get_output_format()
     print(best_solution.knapsack)

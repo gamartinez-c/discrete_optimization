@@ -12,8 +12,11 @@ class SolutionDynamicPrograming(Solution):
     def solve(self):
         for item_index in range(len(self.list_of_items)):
             self.solution_matrix[0][item_index] = 0
+
         for index_of_item, item in enumerate(self.list_of_items):
             self.solve_item(index_of_item, item)
+            if index_of_item % 10 == 0:
+                print("Item numbers: ", index_of_item, "of", len(self.list_of_items), "Solved." )
 
         self._add_selected_items_to_knapsack()
         self.value = self.knapsack.value
