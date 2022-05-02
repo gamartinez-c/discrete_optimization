@@ -1,6 +1,9 @@
 #!/usr/bin/python
 # -*- coding: utf-8 -*-
 import datetime as dt
+import sys
+import threading
+
 from item import Item
 from solution_greedy import SolutionGreedy
 from solution_dynamic_programing import SolutionDynamicPrograming
@@ -47,12 +50,9 @@ def solve_it(input_data):
 
         solution_branch_and_bound = SolutionBranchAndBound(capacity_of_knapsack, items_list)
 
-        thread = threading.Thread(target=solution_branch_and_bound.solve)
-        thread.start()
-        thread.join()
-        # solution_branch_and_bound.solve()
-
-        print(solution_branch_and_bound)
+        thread_1 = threading.Thread(target=solution_branch_and_bound.solve)
+        thread_1.start()
+        thread_1.join()
         best_solution = solution_branch_and_bound
         print('Solved Branch and Bound')
 
@@ -85,27 +85,15 @@ def solve_it(input_data):
 
 
 if __name__ == '__main__':
-    import threading
-    import sys
-
-    sys.setrecursionlimit(100000)
-    threading.stack_size(200000000)
-
-    print(sys.getrecursionlimit())
-
     if len(sys.argv) > 1:
         file_location = sys.argv[1].strip()
         with open(file_location, 'r') as input_data_file:
             input_data = input_data_file.read()
-            thread = threading.Thread(target=solve_it(input_data))
-            thread.start()
-            # print(solve_it(input_data))
+            print(solve_it(input_data))
     else:
         print('Arranca')
         number_of_scenario = input('Enter the number of Scenario:')
         file_location = f'data/ks_{number_of_scenario}_0'
         with open(file_location, 'r') as input_data_file:
             input_data = input_data_file.read()
-            thread = threading.Thread(target=solve_it(input_data))
-            thread.start()
-            # print(solve_it(input_data))
+            print(solve_it(input_data))

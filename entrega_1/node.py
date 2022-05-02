@@ -52,20 +52,20 @@ class Node:
             best_node.run()
         else:
             self.tree.mejor_nodo = best_node
-            print('Finish.')
 
     def get_solution_path(self, nodo):
 
         if self == nodo:
-            return [self]
+            return []
         else:
             return_0 = None if self.nodo_0 is None else self.nodo_0.get_solution_path(nodo)
             return_1 = None if self.nodo_1 is None else self.nodo_1.get_solution_path(nodo)
 
             if return_0 is not None:
-                return return_0.append(self)
+                return return_0
             elif return_1 is not None:
-                return return_1.append(self)
+                return_1.append(self.list_of_items[0])
+                return return_1
             else:
                 return None
 
@@ -97,7 +97,7 @@ class Node:
             self.nodo_1.add_information_to_graph(graph)
 
     def debugging_print(self):
-        print('node calculation no: c:', self.nodo_0.capacidad,
+        print('node calculation no: c:', self.nodo_0.capacity,
               'v:', self.nodo_0.valor,
               '\tMejor', self.tree.mejor_nodo,
               '\tEstimado:', self.nodo_0.estimacion,
