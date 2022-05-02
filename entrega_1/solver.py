@@ -4,6 +4,7 @@ import datetime as dt
 from item import Item
 from solution_greedy import SolutionGreedy
 from solution_dynamic_programing import SolutionDynamicPrograming
+from solution_branch_and_bound import SolutionBranchAndBound
 
 
 def get_best_solution(solutions):
@@ -17,7 +18,7 @@ def get_best_solution(solutions):
 
 
 def solve_it(input_data):
-    print('-'*60)
+    print('\n', '-'*60)
 
     # Modify this code to run your optimization algorithm
     start = dt.datetime.now()
@@ -38,13 +39,30 @@ def solve_it(input_data):
         parts = line.split()
         items_list.append(Item(int(parts[0]), int(parts[1]), i - 1))
 
-    try:
+    approach = 'branch and bound'
+
+    if approach == 'branch and bound':
+        sys.setrecursionlimit(100000)
+        threading.stack_size(200000000)
+
+        solution_branch_and_bound = SolutionBranchAndBound(capacity_of_knapsack, items_list)
+
+        thread = threading.Thread(target=solution_branch_and_bound.solve)
+        thread.start()
+        thread.join()
+        # solution_branch_and_bound.solve()
+
+        print(solution_branch_and_bound)
+        best_solution = solution_branch_and_bound
+        print('Solved Branch and Bound')
+
+    elif approach == 'dynamic':
         solution_dynamic_programing = SolutionDynamicPrograming(capacity_of_knapsack, items_list)
         solution_dynamic_programing.solve()
         print(solution_dynamic_programing)
         best_solution = solution_dynamic_programing
         print('Solved with Dynamic')
-    except Exception as e:
+    else:
         solutions = []
         for method in SolutionGreedy.possible_solving_method:
             solver = SolutionGreedy(capacity_of_knapsack, items_list, method)
@@ -52,7 +70,7 @@ def solve_it(input_data):
             print(solver)
             solutions.append(solver)
         best_solution = get_best_solution(solutions)
-        print('Solved with Dynamic')
+        print('Solved with greedy')
 
     output_data = best_solution.get_output_format()
     print(best_solution.knapsack)
@@ -67,17 +85,27 @@ def solve_it(input_data):
 
 
 if __name__ == '__main__':
+    import threading
     import sys
+
+    sys.setrecursionlimit(100000)
+    threading.stack_size(200000000)
+
+    print(sys.getrecursionlimit())
+
     if len(sys.argv) > 1:
         file_location = sys.argv[1].strip()
         with open(file_location, 'r') as input_data_file:
             input_data = input_data_file.read()
-        print(solve_it(input_data))
+            thread = threading.Thread(target=solve_it(input_data))
+            thread.start()
+            # print(solve_it(input_data))
     else:
+        print('Arranca')
         number_of_scenario = input('Enter the number of Scenario:')
         file_location = f'data/ks_{number_of_scenario}_0'
         with open(file_location, 'r') as input_data_file:
             input_data = input_data_file.read()
-        print(solve_it(input_data))
-        #print('This test requires an input file.  Please select one from the data directory. (i.e. python solution_greedy.py ./data/ks_4_0)')
-
+            thread = threading.Thread(target=solve_it(input_data))
+            thread.start()
+            # print(solve_it(input_data))

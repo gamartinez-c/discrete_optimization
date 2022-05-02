@@ -63,5 +63,5 @@ class SolutionGreedy(Solution):
 
     def __str__(self):
         text = ''
-        text += self.method + " || " + str(self.knapsack) + "\n"
+        text += self.method + " || " + str(self.knapsack)
         return text

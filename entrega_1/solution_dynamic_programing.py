@@ -1,5 +1,6 @@
 from solution import Solution
 import numpy as np
+import datetime as dt
 
 
 class SolutionDynamicPrograming(Solution):
@@ -15,8 +16,8 @@ class SolutionDynamicPrograming(Solution):
 
         for index_of_item, item in enumerate(self.list_of_items):
             self.solve_item(index_of_item, item)
-            if index_of_item % 10 == 0:
-                print("Item numbers: ", index_of_item, "of", len(self.list_of_items), "Solved." )
+            if index_of_item % 5 == 0:
+                print("Item numbers: ", index_of_item, "of", len(self.list_of_items), "Solved. Time:", dt.datetime.now(), ".")
 
         self._add_selected_items_to_knapsack()
         self.value = self.knapsack.value
