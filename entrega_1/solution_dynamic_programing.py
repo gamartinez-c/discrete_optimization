@@ -10,13 +10,13 @@ class SolutionDynamicPrograming(Solution):
         super().__init__(knapsack_size, list_of_items)
         self.solution_matrix = np.zeros((knapsack_size + 1, len(list_of_items)))
 
-    def solve(self):
+    def solve(self, prints=True):
         for item_index in range(len(self.list_of_items)):
             self.solution_matrix[0][item_index] = 0
 
         for index_of_item, item in enumerate(self.list_of_items):
             self.solve_item(index_of_item, item)
-            if index_of_item % 5 == 0:
+            if index_of_item % 5 == 0 and prints:
                 print("Item numbers: ", index_of_item, "of", len(self.list_of_items), "Solved. Time:", dt.datetime.now(), ".")
 
         self._add_selected_items_to_knapsack()

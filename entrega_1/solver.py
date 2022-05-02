@@ -74,9 +74,6 @@ def solve_it(input_data):
 
     output_data = best_solution.get_output_format()
     print(best_solution.knapsack)
-    print(best_solution.list_of_items[-1])
-    print(f'number of items {len(best_solution.list_of_items)}.')
-    print('number of booleans ' + str(len(output_data.split("\n")[-1].split(" "))) + '.')
 
     end_time = dt.datetime.now()
     print('Time', (end_time-start).seconds)

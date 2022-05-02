@@ -48,6 +48,16 @@ class Node:
             if edge_node.get_relaxed_value() > best_node.get_relaxed_value():
                 best_node = edge_node
 
+        limit = 1.01
+        if self.nodo_1 is None:
+            if self.nodo_0.get_relaxed_value() * limit > best_node.get_relaxed_value():
+                best_node = self.nodo_0
+        else:
+            if best_node.get_relaxed_value() < self.nodo_0.get_relaxed_value() * limit or best_node.get_relaxed_value() < self.nodo_1.get_relaxed_value() * limit:
+                if self.nodo_0.get_relaxed_value() > self.nodo_1.get_relaxed_value():
+                    best_node = self.nodo_0
+                else:
+                    best_node = self.nodo_1
         if len(best_node.list_of_items) != 0:
             best_node.run()
         else:
