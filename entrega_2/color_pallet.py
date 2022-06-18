@@ -11,7 +11,7 @@ class ColorPallet:
         color_excluding = [] if color_excluding is None else color_excluding
         color_to_choose_from = set(self.colors) - set(color_excluding)
         if len(color_to_choose_from) == 0:
-            return self.add_color()
+            return None
         elif selection == 'random':
             return random.choice([*color_to_choose_from])
         else:
