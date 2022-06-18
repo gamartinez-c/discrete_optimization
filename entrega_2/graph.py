@@ -95,6 +95,7 @@ class Graph:
 
     def plot(self, flag_current=False):
         colors = {
+            -1: 'white',
             0: 'pink',
             1: 'red',
             2: 'blue',
@@ -127,4 +128,11 @@ class Graph:
             node.set_edgecolor('black')
 
             plt.show()
+
+    def get_return_format(self):
+        return_color_list = [self.get_color_of_node(node) for node in self.graph.nodes]
+        return_string = ''
+        return_string += str(len(set(return_color_list))) + ' 0 \n'
+        return_string += ' '.join(map(str, return_color_list))
+        return return_string
 
