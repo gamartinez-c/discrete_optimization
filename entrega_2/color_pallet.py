@@ -14,6 +14,10 @@ class ColorPallet:
             return None
         elif selection == 'random':
             return random.choice([*color_to_choose_from])
+        elif selection == 'sequential':
+            color_to_choose_from = list(color_to_choose_from)
+            color_to_choose_from.sort()
+            return color_to_choose_from[0]
         else:
             color = self.get_next_sequential_color()
             while color in color_excluding:
@@ -24,6 +28,7 @@ class ColorPallet:
         counter = 0
         while True:
             index = counter % len(self.colors)
+            print(counter, index)
             yield self.colors[index]
             counter += 1
 
@@ -31,3 +36,6 @@ class ColorPallet:
         color = len(self.colors)
         self.colors.append(color)
         return color
+
+    def __len__(self):
+        return len(self.colors)
