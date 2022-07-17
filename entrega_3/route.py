@@ -30,6 +30,30 @@ class Route:
             total_distance += location_1.distance_to(location_2)
             return total_distance
 
+    def get_loc_with_most_travel_times(self):
+
+        prev_location = self.sequence_list[-1]
+        curr_location = self.sequence_list[0]
+        foll_location = self.sequence_list[1]
+
+        distance_to_prev = prev_location.distance_to(curr_location)
+        distance_to_foll = foll_location.distance_to(curr_location)
+        biggest_distance = distance_to_prev + distance_to_foll
+        picked_location = curr_location
+        for location_index in range(1, len(self)):
+            prev_location = self.sequence_list[location_index - 1]
+            curr_location = self.sequence_list[location_index]
+            foll_location = self.sequence_list[location_index + 1]
+
+            distance_to_prev = prev_location.distance_to(curr_location)
+            distance_to_foll = foll_location.distance_to(curr_location)
+            total_distance_for_location = distance_to_prev + distance_to_foll
+            if biggest_distance < total_distance_for_location:
+                biggest_distance = total_distance_for_location
+                picked_location = curr_location
+
+        return picked_location
+
     def swap_locations(self, location_1, location_2):
         index_of_location_1 = self.sequence_list.index(location_1)
         index_of_location_2 = self.sequence_list.index(location_2)
@@ -68,3 +92,6 @@ class Route:
             plt.text(x+1, y+1, s)
 
         plt.show()
+
+    def __len__(self):
+        return len(self.sequence_list)
