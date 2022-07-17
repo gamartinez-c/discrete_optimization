@@ -142,3 +142,12 @@ class Location:
                 first_location = location
                 min_distance = location.distance_to()
         return first_location
+
+
+    @staticmethod
+    def load_locations(position_list):
+        Location.locations_list = []
+        Location.count_of_locations = 0
+        for locations_line in position_list:
+            parts = locations_line.split()
+            Location(float(parts[0]), float(parts[1]))
