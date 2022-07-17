@@ -45,7 +45,7 @@ class Location:
                 if distance_to_location < min_distance:
                     picked_location = location
                     min_distance = distance_to_location
-            return picked_location, min_distance
+            return picked_location
 
     def angle_with_location(self, other_location=None):
         relative_x = other_location.x - self.x if other_location is not None else -self.x
