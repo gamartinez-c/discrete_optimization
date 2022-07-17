@@ -43,26 +43,28 @@ class Route:
     def plot_route(self):
         position_x_in_route = []
         position_y_in_route = []
-        position_string_in_route = []
         for location in self.sequence_list:
             position_x_in_route.append(location.x)
             position_y_in_route.append(location.y)
-            position_string_in_route.append(str(location.id))
         plt.plot(position_x_in_route, position_y_in_route, color='black', marker='o')
-        for x, y, s in zip(position_x_in_route, position_y_in_route, position_string_in_route):
-            plt.text(x+1, y+1, s)
+        if len(self.sequence_list) == len(Location.locations_list):
+            position_x_in_route = []
+            position_y_in_route = []
+            for location in [self.sequence_list[0], self.sequence_list[-1]]:
+                position_x_in_route.append(location.x)
+                position_y_in_route.append(location.y)
+                plt.plot(position_x_in_route, position_y_in_route, color='red')
 
         locations_not_in_route = set(Location.locations_list) - set(self.sequence_list)
         position_x_not_in_route = []
         position_y_not_in_route = []
-        position_string_not_in_route = []
         for location in locations_not_in_route:
             position_x_not_in_route.append(location.x)
             position_y_not_in_route.append(location.y)
-            position_string_not_in_route.append(str(location.id))
         plt.scatter(position_x_not_in_route, position_y_not_in_route, color='black', marker='o')
-        for x, y, s in zip(position_x_not_in_route, position_y_not_in_route, position_string_not_in_route):
-            plt.text(x+1, y+1, s)
 
+        for location in Location.locations_list:
+            x, y, s = location.x, location.y, location.id
+            plt.text(x+1, y+1, s)
 
         plt.show()
