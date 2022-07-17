@@ -132,3 +132,13 @@ class Location:
         location_return_list = Location.locations_list.copy()
         random.shuffle(location_return_list)
         return location_return_list
+
+    @staticmethod
+    def get_nearest_location_to_origin():
+        first_location = Location.locations_list[0]
+        min_distance = first_location.distance_to()
+        for location in Location.locations_list[1:]:
+            if location.distance_to() < min_distance:
+                first_location = location
+                min_distance = location.distance_to()
+        return first_location
