@@ -7,7 +7,6 @@ class Location:
     count_of_locations = 0
 
     locations_list = []
-    locations_by_id = {}
 
     def __init__(self, x, y):
         self.x = x
@@ -15,7 +14,6 @@ class Location:
 
         self.id = Location.count_of_locations
 
-        Location.locations_by_id[self.id] = self
         Location.locations_list.append(self)
 
         Location.count_of_locations += 1
