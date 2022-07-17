@@ -50,9 +50,7 @@ class Location:
     def angle_with_location(self, other_location=None):
         relative_x = other_location.x - self.x if other_location is not None else -self.x
         relative_y = other_location.y - self.y if other_location is not None else -self.y
-        print(relative_x, relative_y)
-        print((-np.arctan2(relative_x, relative_y) + np.pi), (-np.arctan2(relative_x, relative_y) + np.pi)% (np.pi*2))
-        ang1 = (-np.arctan2(relative_x, relative_y) + np.pi/2) % (np.pi*2)
+        ang1 = (-np.arctan2(relative_x, relative_y) + np.pi) % (np.pi*2)
         return np.rad2deg(ang1)
 
     def __str__(self):
