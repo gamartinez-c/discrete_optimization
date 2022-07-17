@@ -20,11 +20,14 @@ class Route:
             return total_distance
         else:
             index = 0
-            while index != (len(self.sequence_list) - 2):
+            while index != (len(self.sequence_list) - 1):
                 location_1 = self.sequence_list[index]
                 location_2 = self.sequence_list[index + 1]
                 total_distance += location_1.distance_to(location_2)
                 index += 1
+            location_1 = self.sequence_list[-1]
+            location_2 = self.sequence_list[0]
+            total_distance += location_1.distance_to(location_2)
             return total_distance
 
     def swap_locations(self, location_1, location_2):
