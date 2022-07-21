@@ -9,10 +9,12 @@ class Location:
     locations_list = []
 
     def __init__(self, x, y):
+        self.id = Location.count_of_locations
+
         self.x = x
         self.y = y
 
-        self.id = Location.count_of_locations
+        self.location_order_by_distance = []
 
         Location.locations_list.append(self)
 
@@ -29,29 +31,20 @@ class Location:
         return distance
 
     def get_nearest_location(self, exclude_location_list=None):
-        locations_to_compare = Location.locations_list.copy()
-        locations_to_compare.remove(self)
-        if exclude_location_list is not None:
-            for location in exclude_location_list:
-                locations_to_compare.remove(location)
-
-        if len(locations_to_compare) == 0:
-            return None
-        else:
-            picked_location = locations_to_compare[0]
-            min_distance = self.distance_to(picked_location)
-            for location in locations_to_compare[1:]:
-                distance_to_location = self.distance_to(location)
-                if distance_to_location < min_distance:
-                    picked_location = location
-                    min_distance = distance_to_location
-            return picked_location
+        return_location = None
+        for location in self.location_order_by_distance:
+            if location not in exclude_location_list:
+                return location
+        return return_location
 
     def angle_with_location(self, other_location=None):
         relative_x = other_location.x - self.x if other_location is not None else -self.x
         relative_y = other_location.y - self.y if other_location is not None else -self.y
         ang1 = (-np.arctan2(relative_x, relative_y) + np.pi) % (np.pi*2)
         return np.rad2deg(ang1)
+
+    def sort_location_list_by_distance(self):
+        self.location_order_by_distance.sort(key=lambda loc: self.distance_to(loc))
 
     def __str__(self):
         return str(self.id)
@@ -70,21 +63,15 @@ class Location:
         locations_return_list.append(picked_location)
         remaining_locations_to_add_in_sequence.remove(picked_location)
 
-        while len(remaining_locations_to_add_in_sequence) != 1:
-            picked_location = remaining_locations_to_add_in_sequence[0]
-            min_distance_of_picked = picked_location.distance_to(locations_return_list[-1])
-            for location in remaining_locations_to_add_in_sequence[1:]:
-                distance_to_prev_location = location.distance_to(locations_return_list[-1])
-                if min_distance_of_picked > distance_to_prev_location:
-                    picked_location = location
-                    min_distance_of_picked = distance_to_prev_location
+        prev_location: Location
+        prev_location = picked_location
+        while len(remaining_locations_to_add_in_sequence) != 0:
+            picked_location = prev_location.get_nearest_location(exclude_location_list=locations_return_list)
 
             locations_return_list.append(picked_location)
             remaining_locations_to_add_in_sequence.remove(picked_location)
 
-        picked_location = remaining_locations_to_add_in_sequence[0]
-        locations_return_list.append(picked_location)
-
+            prev_location = picked_location
         return locations_return_list
 
     @staticmethod
@@ -143,11 +130,15 @@ class Location:
                 min_distance = location.distance_to()
         return first_location
 
-
     @staticmethod
     def load_locations(position_list):
         Location.locations_list = []
         Location.count_of_locations = 0
         for locations_line in position_list:
             parts = locations_line.split()
-            Location(float(parts[0]), float(parts[1]))
+            new_location = Location(float(parts[0]), float(parts[1]))
+
+            for location in Location.locations_list:
+                if location != new_location:
+                    location.location_order_by_distance.append(new_location)
+                    new_location.location_order_by_distance.append(location)
