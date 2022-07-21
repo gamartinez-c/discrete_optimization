@@ -1,56 +1,63 @@
 from location import Location
 import matplotlib.pyplot as plt
+import random
 
 
 class Route:
     def __init__(self):
         self.sequence_list = []
+        self.total_distance = 0
 
     def add_location(self, location, index=None):
-        if index is None:
-            self.sequence_list.append(location)
-        elif index >= len(self.sequence_list):
-            self.sequence_list.append(location)
-        else:
-            self.sequence_list.insert(index, location)
+        if index is None or index >= len(self):
+            index = len(self) - 1
+
+        if len(self) != 0:
+            self.total_distance -= self.get_distance_to_location(index)
+
+        self.sequence_list.insert(index, location)
+        self.total_distance += self.get_total_distance_of_location(index)
+
+    def remove_location(self, location):
+        index_of_location = self.sequence_list.index(location)
+
+        self.total_distance -= self.get_total_distance_of_location(index_of_location)
+        self.sequence_list.remove(location)
+
+        if len(self) != 0:
+            self.total_distance += self.get_distance_to_location(index_of_location)
 
     def get_total_distance_travel(self):
+        return self.total_distance
+
+    def get_distance_to_location(self, location_index):
+        prev_location = self.get_sequence_location(location_index - 1)
+        curr_location = self.get_sequence_location(location_index)
+        return prev_location.distance_to(curr_location)
+
+    def get_distance_from_location(self, location_index):
+        curr_location = self.get_sequence_location(location_index)
+        foll_location = self.get_sequence_location(location_index + 1)
+        return foll_location.distance_to(curr_location)
+
+    def get_total_distance_of_location(self, location_index):
         total_distance = 0
-        if len(self.sequence_list) <= 1:
-            return total_distance
-        else:
-            index = 0
-            while index != (len(self.sequence_list) - 1):
-                location_1 = self.get_sequence_location(index)
-                location_2 = self.get_sequence_location(index + 1)
-                total_distance += location_1.distance_to(location_2)
-                index += 1
-            location_1 = self.get_sequence_location(-1)
-            location_2 = self.get_sequence_location(0)
-            total_distance += location_1.distance_to(location_2)
-            return total_distance
+        total_distance += self.get_distance_to_location(location_index)
+        total_distance += self.get_distance_from_location(location_index)
+        return total_distance
 
-    def get_loc_with_most_travel_times(self):
-
-        prev_location = self.get_sequence_location(-1)
-        curr_location = self.get_sequence_location(0)
-        foll_location = self.get_sequence_location(1)
-
-        distance_to_prev = prev_location.distance_to(curr_location)
-        distance_to_foll = foll_location.distance_to(curr_location)
-        biggest_distance = distance_to_prev + distance_to_foll
-        picked_location = curr_location
-        for location_index in range(1, len(self)):
-            prev_location = self.get_sequence_location(location_index - 1)
-            curr_location = self.get_sequence_location(location_index)
-            foll_location = self.get_sequence_location(location_index + 1)
-
-            distance_to_prev = prev_location.distance_to(curr_location)
-            distance_to_foll = foll_location.distance_to(curr_location)
-            total_distance_for_location = distance_to_prev + distance_to_foll
-            if biggest_distance < total_distance_for_location:
-                biggest_distance = total_distance_for_location
-                picked_location = curr_location
+    def get_loc_with_most_travel_times(self, exclude_locations=None):
+        exclude_locations = exclude_locations if exclude_locations is not None else []
+        picked_location = random.choice([*{*Location.locations_list} - {*exclude_locations}])
+        picked_location_index = self.sequence_list.index(picked_location)
+        biggest_distance = self.get_total_distance_of_location(picked_location_index)
+        for location_index in range(0, len(self)):
+            current_location = self.get_sequence_location(location_index)
+            if current_location not in exclude_locations:
+                total_distance_for_location = self.get_total_distance_of_location(location_index)
+                if biggest_distance < total_distance_for_location:
+                    biggest_distance = total_distance_for_location
+                    picked_location = current_location
 
         return picked_location
 
@@ -99,10 +106,16 @@ class Route:
         index_of_location_2 = self.sequence_list.index(location_2)
 
         self.add_location(location_1, index_of_location_2)
-        self.sequence_list.remove(location_2)
+        self.remove_location(location_2)
 
         self.add_location(location_2, index_of_location_1)
-        self.sequence_list.remove(location_1)
+        self.remove_location(location_1)
+
+    def reset_route_with(self, sequence_list):
+        self.sequence_list = []
+        self.total_distance = 0
+        for location in sequence_list:
+            self.add_location(location)
 
     def plot_route(self):
         position_x_in_route = []
@@ -111,7 +124,7 @@ class Route:
             position_x_in_route.append(location.x)
             position_y_in_route.append(location.y)
         plt.plot(position_x_in_route, position_y_in_route, color='black', marker='o')
-        if len(self.sequence_list) == len(Location.locations_list):
+        if len(self) == len(Location.locations_list):
             position_x_in_route = []
             position_y_in_route = []
             for location in [self.get_sequence_location(0), self.get_sequence_location(-1)]:
