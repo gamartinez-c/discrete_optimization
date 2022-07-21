@@ -233,8 +233,8 @@ def output(input_file, solver_file):
         print('Warning: the solver did not return a string.  The given object will be converted with the str() method.')
         solution = str(solution)
 
-    print('Submitting: ')
-    print(solution)
+    # print('Submitting: ')
+    # print(solution)
 
     return solution.strip() + '\n' + str(end - start)
 
