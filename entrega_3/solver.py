@@ -1,36 +1,69 @@
 #!/usr/bin/python
 # -*- coding: utf-8 -*-
-
+import logging
 import os
 import sys
 import math
-import random
+import time
+import logging
 
-from route import Route
+import matplotlib.pyplot as plt
+
 from solution import Solution
 from location import Location
 
+logging.basicConfig(level=logging.INFO, format="%(asctime)s --- %(message)s")
 
 def length(point1, point2):
     return math.sqrt((point1.x - point2.x)**2 + (point1.y - point2.y)**2)
 
 
-def solve_it(input_data):
+def solve_it(input_data_list):
+    Solution.list_of_solutions = []
     # Modify this code to run your optimization algorithm
 
-    # parse the input
-    lines = input_data.split('\n')
+    start_time_load_location = time.time()
+    logging.info('Start loading Nodes.')
 
-    Location.load_locations(lines[1:])
+    # parse the input
+    lines = input_data_list.split('\n')
+    logging.info("Amount of Nodes: " + str(lines[0]))
+    Location.load_locations(lines[1:-1])
+
+    logging.info('Finish loading Nodes.')
+
+    for location in Location.locations_list:
+        location.sort_location_list_by_distance()
+
+    logging.info('Finish sorting Nodes.')
+
+    start_time_initial_attribution = time.time()
+
+    logging.info("Time Loading location: " + str(round(start_time_initial_attribution - start_time_load_location, 2)))
 
     # build a trivial solution
     # visit the nodes in the order they appear in the file
-    first_locations_approachs = ['origin'] + ['random']
-    greedy_heuristics_approachs = ['min_distance'] + ['clockwise']
+    amount_of_random = 1000 if len(Location.locations_list) < 30000 else 10
+    first_locations_approachs = ['origin'] + ['random']*amount_of_random
+    greedy_heuristics_approachs = ['min_distance'] + ['clockwise']*0
     for heuristic_name in greedy_heuristics_approachs:
         for first_location_name in first_locations_approachs:
             solution = Solution()
             solution.solve_initial_solution_for_route(first_location_name, heuristic_name)
+
+    end_initial_solution = time.time()
+    time_in_initial_solution = end_initial_solution - start_time_initial_attribution
+    logging.info('Initial Solution Time: ' + str(round(time_in_initial_solution, 2)))
+
+    solution_list = Solution.list_of_solutions.copy()
+    solution_list.sort(key=lambda sol: sol.get_obj_value())
+    solution_list = solution_list[:3] + solution_list[-1:]
+    for solution in solution_list:
+        loops_for_swaps, loops_for_breaking_bad_connections = (800, 800) if len(Location.locations_list) < 30000 else (100, 100)
+        solution.improve_looking_for_neighbours(loops_for_swaps, loops_for_breaking_bad_connections)
+
+    end_neighbours = time.time()
+    logging.info('Neighbour Time: ' + str(round(end_neighbours - end_initial_solution, 2)))
 
     best_solution = Solution.get_best_solution()
     best_solution.plot()
@@ -53,12 +86,23 @@ if __name__ == '__main__':
         file_locations.sort(key=lambda x: len(x))
     else:
         file_locations = [file_location]
+
+    time_list = []
+    problem_size = []
     for file_location in file_locations:
-        Solution.list_of_solutions = []
+        start = time.time()
         with open(file_location, 'r') as input_data_file:
             input_data = input_data_file.read()
-        print('#'*60)
-        print('Start with: ' + file_location + '.')  # , end=' ')
+        logging.info('#'*60)
+        logging.info('Start with: ' + file_location + '.')  # , end=' ')
         sys.stdout.flush()
-        solution_output = solve_it(input_data)
-        print(solution_output)
+        lines = input_data.split('\n')
+        if int(lines[0]) <= 30000:
+            solution_output = solve_it(input_data)
+            # print(solution_output)
+            end = time.time()
+            time_list.append(end - start)
+            problem_size.append(int(lines[0]))
+
+    plt.scatter(problem_size, time_list)
+    plt.show()
