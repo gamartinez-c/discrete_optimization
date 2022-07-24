@@ -4,7 +4,8 @@ import random
 
 
 class Route:
-    def __init__(self):
+    def __init__(self, locations_to_consider):
+        self.locations_to_consider = locations_to_consider
         self.sequence_list = []
         self.total_distance = 0
 
@@ -48,7 +49,7 @@ class Route:
 
     def get_loc_with_most_travel_times(self, exclude_locations=None):
         exclude_locations = exclude_locations if exclude_locations is not None else []
-        picked_location = random.choice([*{*Location.locations_list} - {*exclude_locations}])
+        picked_location = random.choice([*{*self.locations_to_consider} - {*exclude_locations}])
         picked_location_index = self.sequence_list.index(picked_location)
         biggest_distance = self.get_total_distance_of_location(picked_location_index)
         for location_index in range(0, len(self)):
@@ -124,7 +125,7 @@ class Route:
             position_x_in_route.append(location.x)
             position_y_in_route.append(location.y)
         plt.plot(position_x_in_route, position_y_in_route, color='black', marker='o')
-        if len(self) == len(Location.locations_list):
+        if len(self) == len(self.locations_to_consider):
             position_x_in_route = []
             position_y_in_route = []
             for location in [self.get_sequence_location(0), self.get_sequence_location(-1)]:
@@ -132,7 +133,7 @@ class Route:
                 position_y_in_route.append(location.y)
                 plt.plot(position_x_in_route, position_y_in_route, color='red')
 
-        locations_not_in_route = set(Location.locations_list) - set(self.sequence_list)
+        locations_not_in_route = set(self.locations_to_consider) - set(self.sequence_list)
         position_x_not_in_route = []
         position_y_not_in_route = []
         for location in locations_not_in_route:
@@ -140,11 +141,19 @@ class Route:
             position_y_not_in_route.append(location.y)
         plt.scatter(position_x_not_in_route, position_y_not_in_route, color='black', marker='o')
 
-        for location in Location.locations_list:
+        for location in self.locations_to_consider:
             x, y, s = location.x, location.y, location.id
             plt.text(x+1, y+1, s)
 
         plt.show()
+
+    def __hash__(self):
+        return '-'.join([str(location.id) for location in self.sequence_list])
+
+    def __eq__(self, other):
+        same_route = self.sequence_list == other.sequence_list
+        same_obj_value = self.total_distance == self.total_distance
+        return same_route and same_obj_value
 
     def __len__(self):
         return len(self.sequence_list)
