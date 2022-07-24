@@ -8,8 +8,10 @@ from location import Location
 class Solution:
     list_of_solutions = []
 
-    def __init__(self):
-        self.route = Route()
+    def __init__(self, list_of_locations=None):
+        if list_of_locations is None:
+            list_of_locations = Location.locations_list
+        self.route = Route(list_of_locations)
         Solution.list_of_solutions.append(self)
 
     def solve_initial_solution_for_route(self, approach_for_first_loc, greedy_approach):
@@ -54,6 +56,8 @@ class Solution:
         self.route.add_location(location_to_improve, index=best_position)
 
     def improve_looking_for_neighbours(self, loops_for_swaps=300, loops_for_breaking_bad_connections=300):
+        logging.info("Solution Started")
+
         initial_value = self.get_obj_value()
 
         prev_location_moved = None
@@ -92,7 +96,10 @@ class Solution:
         # self.plot()
         final_value = self.get_obj_value()
 
-        logging.info("neighbout 1: " + str(j) + " neighbout 2: " + str(i) + " Improvement: " + str(initial_value - final_value))
+        message = "neighbout 1: " + str(j)
+        message += "| neighbout 2: " + str(i)
+        message += "| Improvement: " + str(initial_value - final_value)
+        logging.info(message)
 
     def improve_just_1_link(self, src_loc, dest_loc):
         original_sequence = self.route.sequence_list.copy()
