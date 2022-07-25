@@ -18,6 +18,12 @@ sys.setrecursionlimit(20000)
 
 def solve_it(input_data_list):
     Solution.list_of_solutions = []
+
+    amount_of_random = 1000 if len(Location.locations_list) < 30000 else 10
+
+    amount_of_best_sol_to_imp, amount_of_bad_sol_to_imp = (1, 1)
+    amount_of_solutions_to_improve = amount_of_best_sol_to_imp + amount_of_bad_sol_to_imp
+
     # Modify this code to run your optimization algorithm
 
     start_time_load_location = time.time()
