@@ -32,7 +32,8 @@ class Location:
 
     def get_nearest_location(self, exclude_location_list=None):
         return_location = None
-        for location in self.location_order_by_distance:
+        for location_id in self.location_order_by_distance:
+            location = Location.locations_list[location_id]
             if location not in exclude_location_list:
                 return location
         return return_location
