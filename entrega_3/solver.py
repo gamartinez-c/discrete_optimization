@@ -40,14 +40,11 @@ def solve_it(input_data_list):
         location.sort_location_list_by_distance()
 
     logging.info('Finish sorting Nodes.')
-
     start_time_initial_attribution = time.time()
-
     logging.info("Time Loading location: " + str(round(start_time_initial_attribution - start_time_load_location, 2)))
 
     # build a trivial solution
     # visit the nodes in the order they appear in the file
-    amount_of_random = 1000 if len(Location.locations_list) < 30000 else 10
     first_locations_approachs = ['origin'] + ['random']*amount_of_random
     greedy_heuristics_approachs = ['min_distance'] + ['clockwise']*0
     for heuristic_name in greedy_heuristics_approachs:
