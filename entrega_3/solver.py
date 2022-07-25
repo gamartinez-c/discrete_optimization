@@ -3,9 +3,9 @@
 import logging
 import os
 import sys
-import math
 import time
 import logging
+from multiprocessing import Process, Pool, Manager
 
 import matplotlib.pyplot as plt
 
@@ -13,9 +13,7 @@ from solution import Solution
 from location import Location
 
 logging.basicConfig(level=logging.INFO, format="%(asctime)s --- %(message)s")
-
-def length(point1, point2):
-    return math.sqrt((point1.x - point2.x)**2 + (point1.y - point2.y)**2)
+sys.setrecursionlimit(20000)
 
 
 def solve_it(input_data_list):
