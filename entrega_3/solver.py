@@ -20,13 +20,6 @@ def solve_it(input_data_list):
     logging.info("#"*60)
     Solution.list_of_solutions = []
 
-    amount_of_random = 1000 if len(Location.locations_list) < 30000 else 10
-
-    amount_of_best_sol_to_imp, amount_of_bad_sol_to_imp = (1, 1)
-    amount_of_solutions_to_improve = amount_of_best_sol_to_imp + amount_of_bad_sol_to_imp
-
-    # Modify this code to run your optimization algorithm
-
     start_time_load_location = time.time()
     logging.info('Start loading Nodes.')
 
@@ -35,6 +28,19 @@ def solve_it(input_data_list):
     logging.info("Amount of Nodes: " + str(lines[0]))
     Location.load_locations(lines[1:-1])
 
+    amount_of_random = 100 if len(Location.locations_list) < 30000 else 5
+
+    if len(Location.locations_list) < 1000:
+        loops_for_swaps, loops_for_2_opt = (1600, 1600)
+        amount_of_best_sol_to_imp, amount_of_bad_sol_to_imp = (10, 5)
+    elif len(Location.locations_list) < 30000:
+        loops_for_swaps, loops_for_2_opt = (800, 800)
+        amount_of_best_sol_to_imp, amount_of_bad_sol_to_imp = (5, 2)
+    else:
+        loops_for_swaps, loops_for_2_opt = (100, 100)
+        amount_of_best_sol_to_imp, amount_of_bad_sol_to_imp = (3, 1)
+
+    amount_of_solutions_to_improve = amount_of_best_sol_to_imp + amount_of_bad_sol_to_imp
     logging.info('Finish loading Nodes.')
 
     for location in Location.locations_list:
