@@ -65,10 +65,16 @@ def solve_it(input_data_list):
 
     solution_list = Solution.list_of_solutions.copy()
     solution_list.sort(key=lambda sol: sol.get_obj_value())
-    solution_list = solution_list[:3] + solution_list[-1:]
-    for solution in solution_list:
-        loops_for_swaps, loops_for_breaking_bad_connections = (800, 800) if len(Location.locations_list) < 30000 else (100, 100)
-        solution.improve_looking_for_neighbours(loops_for_swaps, loops_for_breaking_bad_connections)
+    solution_set = set(solution_list[:amount_of_best_sol_to_imp] + solution_list[-amount_of_bad_sol_to_imp:])
+
+    i = 0
+    while len(solution_set) <= amount_of_solutions_to_improve:
+        i += 1
+        solution_set.add(solution_list[amount_of_best_sol_to_imp + i])
+
+    solution_process_list = []
+    for solution in solution_set:
+        solution.improve_looking_for_neighbours(loops_for_swaps, loops_for_2_opt)
 
     end_neighbours = time.time()
     logging.info('Neighbour Time: ' + str(round(end_neighbours - end_initial_solution, 2)))
