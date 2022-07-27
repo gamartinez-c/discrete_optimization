@@ -98,7 +98,8 @@ class Solution:
 
         message = "neighbout 1: " + str(j)
         message += "| neighbout 2: " + str(i)
-        message += "| Improvement: " + str(initial_value - final_value)
+        message += "| Improvement: " + str(int(((initial_value - final_value)/final_value)*10000)/100)
+        message += "| Final Value: " + str(final_value)
         logging.info(message)
 
     def improve_just_1_link(self, src_loc, dest_loc):
