@@ -17,6 +17,7 @@ sys.setrecursionlimit(20000)
 
 
 def solve_it(input_data_list):
+    logging.info("#"*60)
     Solution.list_of_solutions = []
 
     amount_of_random = 1000 if len(Location.locations_list) < 30000 else 10
