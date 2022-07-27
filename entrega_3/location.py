@@ -45,7 +45,9 @@ class Location:
         return np.rad2deg(ang1)
 
     def sort_location_list_by_distance(self):
+        self.location_order_by_distance = [Location.locations_list[loc_id] for loc_id in self.location_order_by_distance]
         self.location_order_by_distance.sort(key=lambda loc: self.distance_to(loc))
+        self.location_order_by_distance = [loc.id for loc in self.location_order_by_distance]
 
     def __str__(self):
         return str(self.id)
@@ -141,5 +143,5 @@ class Location:
 
             for location in Location.locations_list:
                 if location != new_location:
-                    location.location_order_by_distance.append(new_location)
-                    new_location.location_order_by_distance.append(location)
+                    location.location_order_by_distance.append(new_location.id)
+                    new_location.location_order_by_distance.append(location.id)
