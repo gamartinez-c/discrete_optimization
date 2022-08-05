@@ -53,7 +53,7 @@ def solve_it(input_data_list):
     # build a trivial solution
     # visit the nodes in the order they appear in the file
     first_locations_approachs = ['origin'] + ['random']*amount_of_random
-    greedy_heuristics_approachs = ['min_distance'] + ['clockwise']*0
+    greedy_heuristics_approachs = ['min_distance'] + ['mst'] + ['clockwise']*1
     for heuristic_name in greedy_heuristics_approachs:
         for first_location_name in first_locations_approachs:
             solution = Solution()
@@ -74,6 +74,7 @@ def solve_it(input_data_list):
 
     solution_process_list = []
     for solution in solution_set:
+        print('first_location_name:', solution.initial_node, 'heuristic_name:', solution.greedy_constractive)
         solution.improve_looking_for_neighbours(loops_for_swaps, loops_for_2_opt)
 
     end_neighbours = time.time()

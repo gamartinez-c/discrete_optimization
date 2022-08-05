@@ -29,6 +29,8 @@ class Solution:
             heuristic = Location.get_locations_ordered_by_distance
         elif greedy_approach == "clockwise":
             heuristic = Location.get_locations_ordered_by_anti_clockwise
+        elif greedy_approach == 'mst':
+            heuristic = Location.get_mst
         else:
             print("The Greedy approach:", greedy_approach, "is not known")
             exit()
