@@ -141,9 +141,10 @@ class Route:
             position_y_not_in_route.append(location.y)
         plt.scatter(position_x_not_in_route, position_y_not_in_route, color='black', marker='o')
 
-        for location in self.locations_to_consider:
-            x, y, s = location.x, location.y, location.id
-            plt.text(x+1, y+1, s)
+        if len(self.locations_to_consider) > 100:
+            for location in self.locations_to_consider:
+                x, y, s = location.x, location.y, location.id
+                plt.text(x+1, y+1, s)
 
         plt.show()
 
