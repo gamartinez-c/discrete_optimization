@@ -14,8 +14,13 @@ class Solution:
         self.route = Route(list_of_locations)
         Solution.list_of_solutions.append(self)
 
+        self.initial_node = None
+        self.greedy_constructive = None
+
     def solve_initial_solution_for_route(self, approach_for_first_loc, greedy_approach):
         first_location = None
+        self.initial_node = approach_for_first_loc
+        self.greedy_constructive = greedy_approach
         if approach_for_first_loc == "origin":
             first_location = Location.get_nearest_location_to_origin()
         elif approach_for_first_loc == "random":

@@ -28,7 +28,7 @@ def solve_it(input_data_list):
     logging.info("Amount of Nodes: " + str(lines[0]))
     Location.load_locations(lines[1:-1])
 
-    amount_of_random = 100 if len(Location.locations_list) < 30000 else 5
+    amount_of_random = 100 if len(Location.locations_list) < 1000 else 5
 
     if len(Location.locations_list) < 1000:
         loops_for_swaps, loops_for_2_opt = (1600, 1600)
@@ -68,13 +68,13 @@ def solve_it(input_data_list):
     solution_set = set(solution_list[:amount_of_best_sol_to_imp] + solution_list[-amount_of_bad_sol_to_imp:])
 
     i = 0
-    while len(solution_set) <= amount_of_solutions_to_improve:
+    while len(solution_set) <= amount_of_solutions_to_improve and len(solution_set) < len(solution_list):
         i += 1
         solution_set.add(solution_list[amount_of_best_sol_to_imp + i])
 
     solution_process_list = []
     for solution in solution_set:
-        print('first_location_name:', solution.initial_node, 'heuristic_name:', solution.greedy_constractive)
+        print('first_location_name:', solution.initial_node, 'heuristic_name:', solution.greedy_constructive)
         solution.improve_looking_for_neighbours(loops_for_swaps, loops_for_2_opt)
 
     end_neighbours = time.time()
