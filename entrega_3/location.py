@@ -2,6 +2,7 @@ import math
 import random
 import numpy as np
 
+from mst_node import MSTNode
 
 class Location:
     count_of_locations = 0
@@ -116,6 +117,42 @@ class Location:
         locations_return_list.append(picked_location)
 
         return locations_return_list
+
+    @staticmethod
+    def get_mst(first_location=None):
+        first_location = first_location if first_location is not None else random.choice(Location.locations_list)
+        selected_locations = [first_location]
+        base_node = MSTNode(first_location)
+        nodes_dict = {first_location: base_node}
+
+        dict_loc_and_short_loc_to = {loc.id: loc.location_order_by_distance.copy() for loc in Location.locations_list}
+        for loc_id in dict_loc_and_short_loc_to:
+            if first_location.id in dict_loc_and_short_loc_to[loc_id]:
+                dict_loc_and_short_loc_to[loc_id].remove(first_location.id)
+
+        while len(selected_locations) != len(Location.locations_list):
+            selected_location = None
+            selected_source = None
+            dist_btw_selected_nodes = None
+            for source_loc in selected_locations:
+                dest_node_id = dict_loc_and_short_loc_to[source_loc.id][0]
+                dest_loc = Location.locations_list[dest_node_id]
+                dist_btw_nodes = source_loc.distance_to(dest_loc)
+                if dist_btw_selected_nodes is None or dist_btw_nodes < dist_btw_selected_nodes:
+                    selected_location = dest_loc
+                    selected_source = source_loc
+                    dist_btw_selected_nodes = dist_btw_nodes
+
+            selected_locations.append(selected_location)
+            dest_node = MSTNode(selected_location)
+            nodes_dict[selected_location] = dest_node
+            nodes_dict[selected_source].child_nodes.append(dest_node)
+            for loc_id in dict_loc_and_short_loc_to:
+                if selected_location.id in dict_loc_and_short_loc_to[loc_id]:
+                    dict_loc_and_short_loc_to[loc_id].remove(selected_location.id)
+
+        locations_l_to_r_ist = base_node.get_l_to_r_node_path([base_node.location])
+        return locations_l_to_r_ist
 
     @staticmethod
     def get_random_location_list():
