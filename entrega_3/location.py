@@ -1,6 +1,8 @@
 import math
 import random
 import numpy as np
+import pandas as pd
+from sklearn.cluster import KMeans
 
 from mst_node import MSTNode
 
@@ -182,3 +184,30 @@ class Location:
                 if location != new_location:
                     location.location_order_by_distance.append(new_location.id)
                     new_location.location_order_by_distance.append(location.id)
+
+    @staticmethod
+    def get_clustered_locations():
+        info_dict = {'id': [], 'x': [], 'y': []}
+        for location in Location.locations_list:
+            info_dict['id'].append(location.id)
+            info_dict['x'].append(location.x)
+            info_dict['y'].append(location.y)
+        info_df = pd.DataFrame(info_dict)
+        x = info_df[['x', 'y']].values
+
+        k_distances = []
+        relative_distance = 1
+        amount_of_clusters = 1
+        kmeans = KMeans(n_clusters=amount_of_clusters)
+        kmeans.fit(x)
+        k_distances.append(kmeans.inertia_)
+        while (amount_of_clusters < 2 or relative_distance > 0.1) and amount_of_clusters < (len(Location.locations_list) - 1):
+            amount_of_clusters += 1
+            kmeans = KMeans(n_clusters=amount_of_clusters)
+            kmeans.fit(x)
+            k_distances.append(kmeans.inertia_)
+            relative_distance = (k_distances[-1] / k_distances[0])
+
+        clusters = info_df[['id', 'cluster']].groupby('cluster').apply(lambda cluster: list(cluster['id'])).to_dict()
+        clusters = {cluster_id: [Location.locations_list[location_id] for location_id in locations_ids] for cluster_id, locations_ids in clusters.items()}
+        return clusters

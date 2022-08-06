@@ -1,6 +1,6 @@
-from location import Location
-import matplotlib.pyplot as plt
+import logging
 import random
+import matplotlib.pyplot as plt
 
 
 class Route:
@@ -118,7 +118,7 @@ class Route:
         for location in sequence_list:
             self.add_location(location)
 
-    def plot_route(self):
+    def plot_route(self, save_path):
         position_x_in_route = []
         position_y_in_route = []
         for location in self.sequence_list:
@@ -141,12 +141,18 @@ class Route:
             position_y_not_in_route.append(location.y)
         plt.scatter(position_x_not_in_route, position_y_not_in_route, color='black', marker='o')
 
-        if len(self.locations_to_consider) > 100:
+        if len(self.locations_to_consider) < 100:
             for location in self.locations_to_consider:
                 x, y, s = location.x, location.y, location.id
                 plt.text(x+1, y+1, s)
 
-        plt.show()
+        if save_path is not None:
+            try:
+                plt.savefig(save_path)
+            except:
+                logging.info('Wrong path to save.')
+        else:
+            plt.show()
 
     def __hash__(self):
         return '-'.join([str(location.id) for location in self.sequence_list])

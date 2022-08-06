@@ -32,13 +32,13 @@ def solve_it(input_data_list):
 
     if len(Location.locations_list) < 1000:
         loops_for_swaps, loops_for_2_opt = (1600, 1600)
-        amount_of_best_sol_to_imp, amount_of_bad_sol_to_imp = (10, 5)
+        amount_of_best_sol_to_imp, amount_of_bad_sol_to_imp = (3, 1)
     elif len(Location.locations_list) < 30000:
         loops_for_swaps, loops_for_2_opt = (800, 800)
-        amount_of_best_sol_to_imp, amount_of_bad_sol_to_imp = (5, 2)
+        amount_of_best_sol_to_imp, amount_of_bad_sol_to_imp = (2, 1)
     else:
         loops_for_swaps, loops_for_2_opt = (100, 100)
-        amount_of_best_sol_to_imp, amount_of_bad_sol_to_imp = (3, 1)
+        amount_of_best_sol_to_imp, amount_of_bad_sol_to_imp = (1, 1)
 
     amount_of_solutions_to_improve = amount_of_best_sol_to_imp + amount_of_bad_sol_to_imp
     logging.info('Finish loading Nodes.')
@@ -53,8 +53,8 @@ def solve_it(input_data_list):
     # build a trivial solution
     # visit the nodes in the order they appear in the file
     first_locations_approachs = ['origin'] + ['random']*amount_of_random
-    greedy_heuristics_approachs = ['min_distance'] + ['mst'] + ['clockwise']*1
-    for heuristic_name in greedy_heuristics_approachs:
+    greedy_heuristics_approaches = ['min_distance'] + ['mst'] + ['clockwise'] + ['cluster']
+    for heuristic_name in greedy_heuristics_approaches:
         for first_location_name in first_locations_approachs:
             solution = Solution()
             solution.solve_initial_solution_for_route(first_location_name, heuristic_name)
@@ -65,23 +65,30 @@ def solve_it(input_data_list):
 
     solution_list = Solution.list_of_solutions.copy()
     solution_list.sort(key=lambda sol: sol.get_obj_value())
-    solution_set = set(solution_list[:amount_of_best_sol_to_imp] + solution_list[-amount_of_bad_sol_to_imp:])
+    solutions_to_add_set = set(solution_list[:amount_of_best_sol_to_imp] + solution_list[-amount_of_bad_sol_to_imp:])
+    sol_dict_by_const_appr = {greedy_approach: set() for greedy_approach in greedy_heuristics_approaches}
+    for solution in solutions_to_add_set:
+        sol_dict_by_const_appr[solution.greedy_constructive].add(solution)
 
     i = 0
-    while len(solution_set) <= amount_of_solutions_to_improve and len(solution_set) < len(solution_list):
+    solution_group_count = [len(solution_group) for solution_group in sol_dict_by_const_appr.values()]
+    while min(solution_group_count) <= amount_of_best_sol_to_imp and sum(solution_group_count) < len(solution_list):
+        solution = solution_list[amount_of_best_sol_to_imp + i]
+        if len(sol_dict_by_const_appr[solution.greedy_constructive]) <= amount_of_best_sol_to_imp:
+            sol_dict_by_const_appr[solution.greedy_constructive].add(solution)
+        solution_group_count = [len(solution_group) for solution_group in sol_dict_by_const_appr.values()]
         i += 1
-        solution_set.add(solution_list[amount_of_best_sol_to_imp + i])
+    sol_dict_by_const_appr = {sol_greedy_name: list(solutions) for sol_greedy_name, solutions in sol_dict_by_const_appr.items()}
 
-    solution_process_list = []
-    for solution in solution_set:
-        print('first_location_name:', solution.initial_node, 'heuristic_name:', solution.greedy_constructive)
-        solution.improve_looking_for_neighbours(loops_for_swaps, loops_for_2_opt)
+    for greedy_approach in sol_dict_by_const_appr:
+        for solution in sol_dict_by_const_appr[greedy_approach]:
+            solution.improve_looking_for_neighbours(loops_for_swaps, loops_for_2_opt)
 
     end_neighbours = time.time()
     logging.info('Neighbour Time: ' + str(round(end_neighbours - end_initial_solution, 2)))
 
     best_solution = Solution.get_best_solution()
-    best_solution.plot()
+    best_solution.plot('charts/' + str(lines[0]) + '.png')
 
     # Output sequence
     output_data = best_solution.get_output_format()
@@ -119,5 +126,5 @@ if __name__ == '__main__':
             time_list.append(end - start)
             problem_size.append(int(lines[0]))
 
-    plt.scatter(problem_size, time_list)
-    plt.show()
+    # plt.scatter(problem_size, time_list)
+    # plt.show()

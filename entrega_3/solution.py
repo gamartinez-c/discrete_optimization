@@ -36,6 +36,8 @@ class Solution:
             heuristic = Location.get_locations_ordered_by_anti_clockwise
         elif greedy_approach == 'mst':
             heuristic = Location.get_mst
+        elif greedy_approach == 'cluster':
+            Location.get_clustered_locations()
         else:
             print("The Greedy approach:", greedy_approach, "is not known")
             exit()
@@ -63,8 +65,6 @@ class Solution:
         self.route.add_location(location_to_improve, index=best_position)
 
     def improve_looking_for_neighbours(self, loops_for_swaps=300, loops_for_breaking_bad_connections=300):
-        logging.info("Solution Started")
-
         initial_value = self.get_obj_value()
 
         prev_location_moved = None
@@ -103,10 +103,12 @@ class Solution:
         # self.plot()
         final_value = self.get_obj_value()
 
-        message = "neighbout 1: " + str(j)
-        message += "| neighbout 2: " + str(i)
-        message += "| Improvement: " + str(int(((initial_value - final_value)/final_value)*10000)/100)
-        message += "| Final Value: " + str(final_value)
+        message = "initial: " + str(self.initial_node)
+        message += "| greedy: " + str(self.greedy_constructive)
+        message += "| nghb 1: " + str(j)
+        message += "| nghb 2: " + str(i)
+        message += "| Impr: " + str(int(((initial_value - final_value)/final_value)*10000)/100) + "%"
+        message += "| F Val: " + str(int(final_value))
         logging.info(message)
 
     def improve_just_1_link(self, src_loc, dest_loc):
@@ -141,8 +143,8 @@ class Solution:
     def get_obj_value(self):
         return self.route.get_total_distance_travel()
 
-    def plot(self):
-        self.route.plot_route()
+    def plot(self, save_path=None):
+        self.route.plot_route(save_path)
 
     def get_output_format(self):
         solution_output = [Location.locations_list.index(location) for location in self.route.sequence_list]
