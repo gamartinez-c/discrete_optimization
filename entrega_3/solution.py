@@ -10,7 +10,9 @@ class Solution:
 
     def __init__(self, list_of_locations=None):
         if list_of_locations is None:
-            list_of_locations = Location.locations_list
+            self.list_of_locations = Location.locations_list
+        else:
+            self.list_of_locations = list_of_locations
         self.route = Route(list_of_locations)
         Solution.list_of_solutions.append(self)
 
@@ -22,13 +24,14 @@ class Solution:
         self.initial_node = approach_for_first_loc
         self.greedy_constructive = greedy_approach
         if approach_for_first_loc == "origin":
-            first_location = Location.get_nearest_location_to_origin()
+            first_location = Location.get_nearest_location_to_location()
         elif approach_for_first_loc == "random":
             first_location = random.choice([*Location.locations_list])
         else:
             print("The First Location:", approach_for_first_loc, "is not known")
             exit()
 
+        location_list = self.list_of_locations.copy()
         heuristic = None
         if greedy_approach == "min_distance":
             heuristic = Location.get_locations_ordered_by_distance
@@ -37,12 +40,12 @@ class Solution:
         elif greedy_approach == 'mst':
             heuristic = Location.get_mst
         elif greedy_approach == 'cluster':
-            Location.get_clustered_locations()
+            Location.get_clustered_locations(location_list)
         else:
             print("The Greedy approach:", greedy_approach, "is not known")
             exit()
 
-        location_list = heuristic(first_location)
+        location_list = heuristic(location_list, first_location)
         for location in location_list:
             self.route.add_location(location)
 
