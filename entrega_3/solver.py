@@ -26,14 +26,14 @@ def solve_it(input_data_list):
     # parse the input
     lines = input_data_list.split('\n')
     logging.info("Amount of Nodes: " + str(lines[0]))
-    Location.load_locations(lines[1:-1])
+    location_list = Location.load_locations(lines[1:-1])
 
-    amount_of_random = 100 if len(Location.locations_list) < 1000 else 5
+    amount_of_random = 100 if len(location_list) < 1000 else 5
 
-    if len(Location.locations_list) < 1000:
+    if len(location_list) < 1000:
         loops_for_swaps, loops_for_2_opt = (1600, 1600)
         amount_of_best_sol_to_imp, amount_of_bad_sol_to_imp = (3, 1)
-    elif len(Location.locations_list) < 30000:
+    elif len(location_list) < 30000:
         loops_for_swaps, loops_for_2_opt = (800, 800)
         amount_of_best_sol_to_imp, amount_of_bad_sol_to_imp = (2, 1)
     else:
@@ -43,7 +43,7 @@ def solve_it(input_data_list):
     amount_of_solutions_to_improve = amount_of_best_sol_to_imp + amount_of_bad_sol_to_imp
     logging.info('Finish loading Nodes.')
 
-    for location in Location.locations_list:
+    for location in location_list:
         location.sort_location_list_by_distance()
 
     logging.info('Finish sorting Nodes.')
@@ -56,7 +56,7 @@ def solve_it(input_data_list):
     greedy_heuristics_approaches = ['min_distance'] + ['mst'] + ['clockwise']*0 + ['cluster_1'] + ['cluster_2']
     for heuristic_name in greedy_heuristics_approaches:
         for first_location_name in first_locations_approachs:
-            solution = Solution()
+            solution = Solution(location_list)
             solution.solve_initial_solution_for_route(first_location_name, heuristic_name)
 
     end_initial_solution = time.time()

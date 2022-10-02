@@ -8,11 +8,8 @@ from location import Location
 class Solution:
     list_of_solutions = []
 
-    def __init__(self, list_of_locations=None):
-        if list_of_locations is None:
-            self.list_of_locations = Location.locations_list
-        else:
-            self.list_of_locations = list_of_locations
+    def __init__(self, list_of_locations):
+        self.list_of_locations = list_of_locations
         self.route = Route(self.list_of_locations)
         Solution.list_of_solutions.append(self)
 
@@ -24,9 +21,9 @@ class Solution:
         self.initial_node = approach_for_first_loc
         self.greedy_constructive = greedy_approach
         if approach_for_first_loc == "origin":
-            first_location = Location.get_nearest_location_to_location()
+            first_location = Location.get_nearest_location_to_location(self.list_of_locations)
         elif approach_for_first_loc == "random":
-            first_location = random.choice([*Location.locations_list])
+            first_location = random.choice([*self.list_of_locations])
         else:
             print("The First Location:", approach_for_first_loc, "is not known")
             exit()
@@ -81,7 +78,7 @@ class Solution:
         # print(self.get_obj_value())
         i = 0
         exclude_locations = []
-        while prev_location_moved != location_to_move and i < loops_for_swaps and i <= len(Location.locations_list) - 2:
+        while prev_location_moved != location_to_move and i < loops_for_swaps and i <= len(self.list_of_locations) - 2:
             original_sequence = self.route.sequence_list.copy()
             original_obj_value = self.get_obj_value()
 
@@ -123,7 +120,7 @@ class Solution:
         original_obj_value = self.get_obj_value()
 
         loc_to_exclude_list = [src_loc, self.route.get_sequence_location(self.route.sequence_list.index(dest_loc)+1)]
-        ideal_loc_for_dest = dest_loc.get_nearest_location(exclude_location_list=loc_to_exclude_list)
+        ideal_loc_for_dest = dest_loc.get_nearest_location(self.list_of_locations, exclude_location_list=loc_to_exclude_list)
         index_of_ideal_loc_for_dest = self.route.sequence_list.index(ideal_loc_for_dest)
         index_of_src = self.route.sequence_list.index(src_loc)
         index_of_dest = self.route.sequence_list.index(dest_loc)
@@ -154,7 +151,7 @@ class Solution:
         self.route.plot_route(save_path)
 
     def get_output_format(self):
-        solution_output = [Location.locations_list.index(location) for location in self.route.sequence_list]
+        solution_output = [self.list_of_locations.index(location) for location in self.route.sequence_list]
 
         # calculate the length of the tour
         obj = self.get_obj_value()

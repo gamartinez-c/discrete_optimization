@@ -41,11 +41,10 @@ class Location:
         distance = math.sqrt(x_distance**2 + y_distance**2)
         return distance
 
-    def get_nearest_location(self, all_location_list=None, exclude_location_list=None):
-        all_location_list = Location.locations_list if all_location_list is None else all_location_list
+    def get_nearest_location(self, locations_list, exclude_location_list=None):
         return_location = None
         for location_id in self.location_order_by_distance:
-            location = all_location_list[location_id]
+            location = locations_list[location_id]
             if location not in exclude_location_list:
                 return location
         return return_location
@@ -56,8 +55,8 @@ class Location:
         ang1 = (-np.arctan2(relative_x, relative_y) + np.pi) % (np.pi*2)
         return np.rad2deg(ang1)
 
-    def sort_location_list_by_distance(self):
-        self.location_order_by_distance = [Location.locations_list[loc_id] for loc_id in self.location_order_by_distance]
+    def sort_location_list_by_distance(self, location_order_by_id):
+        self.location_order_by_distance = [location_order_by_id[loc_id] for loc_id in self.location_order_by_distance]
         self.location_order_by_distance = self.get_sorted_list_of_loc(self.location_order_by_distance)
         self.location_order_by_distance = [loc.id for loc in self.location_order_by_distance]
 
@@ -71,11 +70,14 @@ class Location:
     def __repr__(self):
         return str(self.id)
 
+    def __hash__(self):
+        return hash(self.id)
+
     @staticmethod
     def get_locations_ordered_by_distance(locations_list, first_location=None):
         first_location = first_location if first_location is not None else random.choice(locations_list)
         locations_return_list = []
-        extra_locations_to_exclude = list({*Location.locations_list} - {*locations_list})
+        extra_locations_to_exclude = list({*locations_list} - {*locations_list})
 
         remaining_locations_to_add_in_sequence = locations_list.copy()
         picked_location = first_location
@@ -86,7 +88,7 @@ class Location:
         prev_location: Location
         prev_location = picked_location
         while len(remaining_locations_to_add_in_sequence) != 0:
-            picked_location = prev_location.get_nearest_location(all_location_list=locations_list, exclude_location_list=locations_return_list + extra_locations_to_exclude)
+            picked_location = prev_location.get_nearest_location(locations_list, exclude_location_list=locations_return_list + extra_locations_to_exclude)
 
             locations_return_list.append(picked_location)
             remaining_locations_to_add_in_sequence.remove(picked_location)
@@ -176,10 +178,10 @@ class Location:
         return location_return_list
 
     @staticmethod
-    def get_nearest_location_to_location(x=0, y=0):
-        first_location = Location.locations_list[0]
+    def get_nearest_location_to_location(locations_list, x=0, y=0):
+        first_location = locations_list[0]
         min_distance = first_location.distance_to_pos(x=x, y=y)
-        for location in Location.locations_list[1:]:
+        for location in locations_list[1:]:
             if location.distance_to_loc() < min_distance:
                 first_location = location
                 min_distance = location.distance_to_pos(x=x, y=y)
@@ -197,6 +199,8 @@ class Location:
                 if location != new_location:
                     location.location_order_by_distance.append(new_location.id)
                     new_location.location_order_by_distance.append(location.id)
+        location_list = Location.locations_list.copy()
+        return location_list
 
     @staticmethod
     def get_clustered_locations_solution(locations_list, first_location=None):
@@ -223,7 +227,7 @@ class Location:
 
         info_df['cluster'] = kmeans.labels_
         clusters = info_df[['id', 'cluster']].groupby('cluster').apply(lambda cluster: list(cluster['id'])).to_dict()
-        clusters = {cluster_id: [Location.locations_list[location_id] for location_id in locations_ids] for cluster_id, locations_ids in clusters.items()}
+        clusters = {cluster_id: [locations_list[location_id] for location_id in locations_ids] for cluster_id, locations_ids in clusters.items()}
 
         # Find the sorting of clusters in a big picture.
         cluster_locations_original = [Location(x, y, add_to_static=False) for x, y in kmeans.cluster_centers_]
