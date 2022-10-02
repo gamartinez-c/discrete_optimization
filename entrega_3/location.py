@@ -44,7 +44,7 @@ class Location:
     def get_nearest_location(self, locations_list, exclude_location_list=None):
         return_location = None
         for location in self.location_order_by_distance:
-            if location not in exclude_location_list:
+            if location not in exclude_location_list and location in locations_list:
                 return location
         return return_location
 
@@ -74,7 +74,6 @@ class Location:
     def get_locations_ordered_by_distance(locations_list, first_location=None):
         first_location = first_location if first_location is not None else random.choice(locations_list)
         locations_return_list = []
-        extra_locations_to_exclude = list({*locations_list} - {*locations_list})
 
         remaining_locations_to_add_in_sequence = locations_list.copy()
         picked_location = first_location
@@ -85,7 +84,7 @@ class Location:
         prev_location: Location
         prev_location = picked_location
         while len(remaining_locations_to_add_in_sequence) != 0:
-            picked_location = prev_location.get_nearest_location(locations_list, exclude_location_list=locations_return_list + extra_locations_to_exclude)
+            picked_location = prev_location.get_nearest_location(locations_list, exclude_location_list=locations_return_list)
 
             locations_return_list.append(picked_location)
             remaining_locations_to_add_in_sequence.remove(picked_location)
@@ -146,24 +145,29 @@ class Location:
                 dict_loc_and_short_loc_to[loc].remove(first_location)
 
         while len(selected_locations) != len(locations_list):
+            # From the tree we already have we go on picking the one connection that is the smallest
             selected_location = None
             selected_source = None
             dist_btw_selected_nodes = None
             for source_loc in selected_locations:
-                dest_node = dict_loc_and_short_loc_to[source_loc][0]
-                dest_loc = locations_list[dest_node.id]
+                dest_loc = dict_loc_and_short_loc_to[source_loc][0]
                 dist_btw_nodes = source_loc.distance_to_loc(dest_loc)
                 if dist_btw_selected_nodes is None or dist_btw_nodes < dist_btw_selected_nodes:
                     selected_location = dest_loc
                     selected_source = source_loc
                     dist_btw_selected_nodes = dist_btw_nodes
 
+            # After selecting the node we expand the Tree
             selected_locations.append(selected_location)
+
             dest_node = MSTNode(selected_location)
             nodes_dict[selected_location] = dest_node
-            nodes_dict[selected_source].child_nodes.append(dest_node)
+
+            source_node = nodes_dict[selected_source]
+            source_node.child_nodes.append(dest_node)
+
             for loc in dict_loc_and_short_loc_to:
-                if selected_location.id in dict_loc_and_short_loc_to[loc]:
+                if selected_location in dict_loc_and_short_loc_to[loc]:
                     dict_loc_and_short_loc_to[loc].remove(selected_location)
 
         locations_l_to_r_ist = base_node.get_l_to_r_node_path([base_node.location])

@@ -24,7 +24,7 @@ def solve_it(input_data_list):
     logging.info("Amount of Nodes: " + str(lines[0]))
     location_list = Location.load_locations(lines[1:-1])
 
-    amount_of_random = 100 if len(location_list) < 1000 else 5
+    amount_of_random = 50 if len(location_list) < 1000 else 5
 
     if len(location_list) < 1000:
         loops_for_swaps, loops_for_2_opt = (1600, 1600)
@@ -75,13 +75,14 @@ def solve_it(input_data_list):
 
     i = 0
     solution_group_count = [len(solution_group) for solution_group in sol_dict_by_const_appr.values()]
-    while min(solution_group_count) <= amount_of_best_sol_to_imp and sum(solution_group_count) < len(solution_list):
+    while min(solution_group_count) <= amount_of_solutions_to_improve and sum(solution_group_count) < len(solution_list) and amount_of_solutions_to_improve + i < len(solution_list):
         solution = solution_list[amount_of_best_sol_to_imp + i]
         if len(sol_dict_by_const_appr[solution.greedy_constructive]) <= amount_of_best_sol_to_imp:
             sol_dict_by_const_appr[solution.greedy_constructive].add(solution)
         solution_group_count = [len(solution_group) for solution_group in sol_dict_by_const_appr.values()]
         i += 1
     sol_dict_by_const_appr = {sol_greedy_name: list(solutions) for sol_greedy_name, solutions in sol_dict_by_const_appr.items()}
+    logging.info('Solutions have been picked')
 
     # Do Neigbours improvements.
     for greedy_approach in sol_dict_by_const_appr:
