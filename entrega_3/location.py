@@ -43,8 +43,7 @@ class Location:
 
     def get_nearest_location(self, locations_list, exclude_location_list=None):
         return_location = None
-        for location_id in self.location_order_by_distance:
-            location = locations_list[location_id]
+        for location in self.location_order_by_distance:
             if location not in exclude_location_list:
                 return location
         return return_location
@@ -56,9 +55,7 @@ class Location:
         return np.rad2deg(ang1)
 
     def sort_location_list_by_distance(self, location_order_by_id):
-        self.location_order_by_distance = [location_order_by_id[loc_id] for loc_id in self.location_order_by_distance]
         self.location_order_by_distance = self.get_sorted_list_of_loc(self.location_order_by_distance)
-        self.location_order_by_distance = [loc.id for loc in self.location_order_by_distance]
 
     def get_sorted_list_of_loc(self, list_of_locations):
         list_of_locations.sort(key=lambda loc: self.distance_to_loc(loc))
@@ -143,18 +140,18 @@ class Location:
         base_node = MSTNode(first_location)
         nodes_dict = {first_location: base_node}
 
-        dict_loc_and_short_loc_to = {loc.id: loc.location_order_by_distance.copy() for loc in locations_list}
-        for loc_id in dict_loc_and_short_loc_to:
-            if first_location.id in dict_loc_and_short_loc_to[loc_id]:
-                dict_loc_and_short_loc_to[loc_id].remove(first_location.id)
+        dict_loc_and_short_loc_to = {loc: loc.location_order_by_distance.copy() for loc in locations_list}
+        for loc in dict_loc_and_short_loc_to:
+            if first_location in dict_loc_and_short_loc_to[loc]:
+                dict_loc_and_short_loc_to[loc].remove(first_location)
 
         while len(selected_locations) != len(locations_list):
             selected_location = None
             selected_source = None
             dist_btw_selected_nodes = None
             for source_loc in selected_locations:
-                dest_node_id = dict_loc_and_short_loc_to[source_loc.id][0]
-                dest_loc = locations_list[dest_node_id]
+                dest_node = dict_loc_and_short_loc_to[source_loc][0]
+                dest_loc = locations_list[dest_node.id]
                 dist_btw_nodes = source_loc.distance_to_loc(dest_loc)
                 if dist_btw_selected_nodes is None or dist_btw_nodes < dist_btw_selected_nodes:
                     selected_location = dest_loc
@@ -165,9 +162,9 @@ class Location:
             dest_node = MSTNode(selected_location)
             nodes_dict[selected_location] = dest_node
             nodes_dict[selected_source].child_nodes.append(dest_node)
-            for loc_id in dict_loc_and_short_loc_to:
-                if selected_location.id in dict_loc_and_short_loc_to[loc_id]:
-                    dict_loc_and_short_loc_to[loc_id].remove(selected_location.id)
+            for loc in dict_loc_and_short_loc_to:
+                if selected_location.id in dict_loc_and_short_loc_to[loc]:
+                    dict_loc_and_short_loc_to[loc].remove(selected_location)
 
         locations_l_to_r_ist = base_node.get_l_to_r_node_path([base_node.location])
         return locations_l_to_r_ist
@@ -197,8 +194,8 @@ class Location:
 
             for location in Location.locations_list:
                 if location != new_location:
-                    location.location_order_by_distance.append(new_location.id)
-                    new_location.location_order_by_distance.append(location.id)
+                    location.location_order_by_distance.append(new_location)
+                    new_location.location_order_by_distance.append(location)
         location_list = Location.locations_list.copy()
         return location_list
 
@@ -236,7 +233,7 @@ class Location:
 
         for location in cluster_locations_original:
             locations_to_order = [loc for loc in cluster_locations_original if loc != location]
-            location.location_order_by_distance = [loc.id for loc in location.get_sorted_list_of_loc(locations_to_order)]
+            location.location_order_by_distance = [loc for loc in location.get_sorted_list_of_loc(locations_to_order)]
 
         cluster_locations_to_sort = cluster_locations_original.copy()
         # cluster_locations_to_sort = Location.greedy_of_less_adding_cost(cluster_locations_to_sort)
@@ -267,10 +264,8 @@ class Location:
         for cluster_label in clusters:
             locations_list = clusters[cluster_label]
             start_loc = start_connector[cluster_label]
-            locations_list.remove(start_loc)
             if first_location == 1:
                 end_loc = end_connection[cluster_label]
-                locations_list.remove(end_loc)
                 sorted_cluster_dict[cluster_label] = Location.greedy_of_less_adding_cost(locations_list, start_loc, end_loc)
             else:
                 sorted_cluster_dict[cluster_label] = Location.get_locations_ordered_by_distance(locations_list, first_location=start_loc)
@@ -299,18 +294,16 @@ class Location:
     @staticmethod
     def greedy_of_less_adding_cost(locations_list, start_loc=None, end_loc=None):
         all_locations_to_consider = [*locations_list]
-        if start_loc is not None:
-            all_locations_to_consider.append(start_loc)
-        if end_loc is not None:
-            all_locations_to_consider.append(end_loc)
-        temporary_route = Route(all_locations_to_consider)
+        temporary_route = Route(all_locations_to_consider.copy())
 
         starter_index = 0 if start_loc is None else 1
         end_index = len(all_locations_to_consider) if end_loc is None else len(all_locations_to_consider) - 1
 
         if start_loc is not None:
+            locations_list.remove(start_loc)
             temporary_route.add_location(start_loc)
         if end_loc is not None:
+            locations_list.remove(end_loc)
             temporary_route.add_location(end_loc, index=len(temporary_route))
 
         for loc in locations_list:

@@ -1,13 +1,9 @@
 #!/usr/bin/python
 # -*- coding: utf-8 -*-
-import logging
 import os
 import sys
 import time
 import logging
-from multiprocessing import Process, Pool, Manager
-
-import matplotlib.pyplot as plt
 
 from solution import Solution
 from location import Location
@@ -44,13 +40,15 @@ def solve_it(input_data_list):
     logging.info('Finish loading Nodes.')
 
     for location in location_list:
-        location.sort_location_list_by_distance()
+        location.sort_location_list_by_distance(location_list)
 
     logging.info('Finish sorting Nodes.')
     start_time_initial_attribution = time.time()
     logging.info("Time Loading location: " + str(round(start_time_initial_attribution - start_time_load_location, 2)))
 
-    # build a trivial solution
+    # #######################################################################
+    # ####################### Build Initial Solutions #######################
+    # #######################################################################
     # visit the nodes in the order they appear in the file
     first_locations_approachs = ['origin'] + ['random']*amount_of_random
     greedy_heuristics_approaches = ['min_distance'] + ['mst'] + ['clockwise']*0 + ['cluster_1'] + ['cluster_2']
@@ -63,6 +61,11 @@ def solve_it(input_data_list):
     time_in_initial_solution = end_initial_solution - start_time_initial_attribution
     logging.info('Initial Solution Time: ' + str(round(time_in_initial_solution, 2)))
 
+    # #######################################################################
+    # ####################### Neihbours #######################
+    # #######################################################################
+
+    # Pick best solutions to improve.
     solution_list = Solution.list_of_solutions.copy()
     solution_list.sort(key=lambda sol: sol.get_obj_value())
     solutions_to_add_set = set(solution_list[:amount_of_best_sol_to_imp] + solution_list[-amount_of_bad_sol_to_imp:])
@@ -80,6 +83,7 @@ def solve_it(input_data_list):
         i += 1
     sol_dict_by_const_appr = {sol_greedy_name: list(solutions) for sol_greedy_name, solutions in sol_dict_by_const_appr.items()}
 
+    # Do Neigbours improvements.
     for greedy_approach in sol_dict_by_const_appr:
         for solution in sol_dict_by_const_appr[greedy_approach]:
             solution.improve_looking_for_neighbours(loops_for_swaps, loops_for_2_opt)
