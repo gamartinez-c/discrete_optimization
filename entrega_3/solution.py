@@ -13,7 +13,7 @@ class Solution:
             self.list_of_locations = Location.locations_list
         else:
             self.list_of_locations = list_of_locations
-        self.route = Route(list_of_locations)
+        self.route = Route(self.list_of_locations)
         Solution.list_of_solutions.append(self)
 
         self.initial_node = None
@@ -39,8 +39,12 @@ class Solution:
             heuristic = Location.get_locations_ordered_by_anti_clockwise
         elif greedy_approach == 'mst':
             heuristic = Location.get_mst
-        elif greedy_approach == 'cluster':
-            Location.get_clustered_locations(location_list)
+        elif greedy_approach == 'cluster_1' or greedy_approach == 'cluster_2':
+            heuristic = Location.get_clustered_locations_solution
+            if greedy_approach == 'cluster_1':
+                first_location = 1
+            if greedy_approach == 'cluster_2':
+                first_location = 2
         else:
             print("The Greedy approach:", greedy_approach, "is not known")
             exit()

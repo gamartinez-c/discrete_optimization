@@ -5,13 +5,15 @@ import pandas as pd
 from sklearn.cluster import KMeans
 
 from mst_node import MSTNode
+from route import Route
+
 
 class Location:
     count_of_locations = 0
 
     locations_list = []
 
-    def __init__(self, x, y):
+    def __init__(self, x, y, add_to_static=True):
         self.id = Location.count_of_locations
 
         self.x = x
@@ -19,9 +21,9 @@ class Location:
 
         self.location_order_by_distance = []
 
-        Location.locations_list.append(self)
-
         Location.count_of_locations += 1
+        if add_to_static:
+            Location.locations_list.append(self)
 
     def distance_to_loc(self, other_location=None):
         if other_location is not None:
@@ -39,10 +41,11 @@ class Location:
         distance = math.sqrt(x_distance**2 + y_distance**2)
         return distance
 
-    def get_nearest_location(self, exclude_location_list=None):
+    def get_nearest_location(self, all_location_list=None, exclude_location_list=None):
+        all_location_list = Location.locations_list if all_location_list is None else all_location_list
         return_location = None
         for location_id in self.location_order_by_distance:
-            location = Location.locations_list[location_id]
+            location = all_location_list[location_id]
             if location not in exclude_location_list:
                 return location
         return return_location
@@ -55,8 +58,12 @@ class Location:
 
     def sort_location_list_by_distance(self):
         self.location_order_by_distance = [Location.locations_list[loc_id] for loc_id in self.location_order_by_distance]
-        self.location_order_by_distance.sort(key=lambda loc: self.distance_to_loc(loc))
+        self.location_order_by_distance = self.get_sorted_list_of_loc(self.location_order_by_distance)
         self.location_order_by_distance = [loc.id for loc in self.location_order_by_distance]
+
+    def get_sorted_list_of_loc(self, list_of_locations):
+        list_of_locations.sort(key=lambda loc: self.distance_to_loc(loc))
+        return list_of_locations
 
     def __str__(self):
         return str(self.id)
@@ -68,6 +75,7 @@ class Location:
     def get_locations_ordered_by_distance(locations_list, first_location=None):
         first_location = first_location if first_location is not None else random.choice(locations_list)
         locations_return_list = []
+        extra_locations_to_exclude = list({*Location.locations_list} - {*locations_list})
 
         remaining_locations_to_add_in_sequence = locations_list.copy()
         picked_location = first_location
@@ -78,7 +86,7 @@ class Location:
         prev_location: Location
         prev_location = picked_location
         while len(remaining_locations_to_add_in_sequence) != 0:
-            picked_location = prev_location.get_nearest_location(exclude_location_list=locations_return_list)
+            picked_location = prev_location.get_nearest_location(all_location_list=locations_list, exclude_location_list=locations_return_list + extra_locations_to_exclude)
 
             locations_return_list.append(picked_location)
             remaining_locations_to_add_in_sequence.remove(picked_location)
@@ -145,7 +153,7 @@ class Location:
             for source_loc in selected_locations:
                 dest_node_id = dict_loc_and_short_loc_to[source_loc.id][0]
                 dest_loc = locations_list[dest_node_id]
-                dist_btw_nodes = source_loc.distance_to(dest_loc)
+                dist_btw_nodes = source_loc.distance_to_loc(dest_loc)
                 if dist_btw_selected_nodes is None or dist_btw_nodes < dist_btw_selected_nodes:
                     selected_location = dest_loc
                     selected_source = source_loc
@@ -191,7 +199,7 @@ class Location:
                     new_location.location_order_by_distance.append(location.id)
 
     @staticmethod
-    def get_clustered_locations(locations_list):
+    def get_clustered_locations_solution(locations_list, first_location=None):
         info_dict = {'id': [], 'x': [], 'y': []}
         for location in locations_list:
             info_dict['id'].append(location.id)
@@ -213,10 +221,108 @@ class Location:
             k_distances.append(kmeans.inertia_)
             relative_distance = (k_distances[-1] / k_distances[0])
 
+        info_df['cluster'] = kmeans.labels_
         clusters = info_df[['id', 'cluster']].groupby('cluster').apply(lambda cluster: list(cluster['id'])).to_dict()
         clusters = {cluster_id: [Location.locations_list[location_id] for location_id in locations_ids] for cluster_id, locations_ids in clusters.items()}
-        sol_for_loc = []
-        for sub_locations in clusters.values():
-            Location.get_locations_ordered_by_distance(sub_locations)
 
-        return clusters
+        # Find the sorting of clusters in a big picture.
+        cluster_locations_original = [Location(x, y, add_to_static=False) for x, y in kmeans.cluster_centers_]
+        for i, loc in enumerate(cluster_locations_original):
+            loc.id = i
+
+        for location in cluster_locations_original:
+            locations_to_order = [loc for loc in cluster_locations_original if loc != location]
+            location.location_order_by_distance = [loc.id for loc in location.get_sorted_list_of_loc(locations_to_order)]
+
+        cluster_locations_to_sort = cluster_locations_original.copy()
+        # cluster_locations_to_sort = Location.greedy_of_less_adding_cost(cluster_locations_to_sort)
+        cluster_locations_to_sort = Location.get_locations_ordered_by_distance(cluster_locations_to_sort)
+
+        # Find which of each cluster will be connected to each other loc of other cluster.
+        start_connector = {}
+        end_connection = {}
+        cluster_locations_to_sort.append(cluster_locations_to_sort[0])
+        for i in range(len(cluster_locations_to_sort)-1):
+            current_cluster = cluster_locations_to_sort[i]
+            following_cluster = cluster_locations_to_sort[i+1]
+
+            current_cluster_label = cluster_locations_original.index(current_cluster)
+            following_cluster_label = cluster_locations_original.index(following_cluster)
+
+            exclude_loc = []
+            for cluster_label_bis in (current_cluster_label, following_cluster_label):
+                for dict_connector in (start_connector, end_connection):
+                    if cluster_label_bis in dict_connector:
+                        exclude_loc.append(dict_connector[cluster_label_bis])
+
+            nearest_tuple = Location.nearest_points_from_groups(clusters[current_cluster_label], clusters[following_cluster_label], exclude_loc=exclude_loc)
+            end_connection[current_cluster_label] = nearest_tuple[0]
+            start_connector[following_cluster_label] = nearest_tuple[1]
+
+        sorted_cluster_dict = {}
+        for cluster_label in clusters:
+            locations_list = clusters[cluster_label]
+            start_loc = start_connector[cluster_label]
+            locations_list.remove(start_loc)
+            if first_location == 1:
+                end_loc = end_connection[cluster_label]
+                locations_list.remove(end_loc)
+                sorted_cluster_dict[cluster_label] = Location.greedy_of_less_adding_cost(locations_list, start_loc, end_loc)
+            else:
+                sorted_cluster_dict[cluster_label] = Location.get_locations_ordered_by_distance(locations_list, first_location=start_loc)
+
+        final_location_list = []
+        for cluster_loc in cluster_locations_to_sort[:-1]:
+            cluster_label = cluster_locations_original.index(cluster_loc)
+            final_location_list += sorted_cluster_dict[cluster_label]
+
+        return final_location_list
+
+    @staticmethod
+    def nearest_points_from_groups(loc_group_1: list, loc_group_2: list, exclude_loc=None):
+        selected_tuple = None
+        smallest_dist = float('inf')
+        exclude_loc = [] if exclude_loc is None else exclude_loc
+
+        for loc_1 in loc_group_1:
+            for loc_2 in loc_group_2:
+                if loc_1 not in exclude_loc and loc_2 not in exclude_loc:
+                    if loc_1.distance_to_loc(loc_2) < smallest_dist:
+                        smallest_dist = loc_1.distance_to_loc(loc_2)
+                        selected_tuple = (loc_1, loc_2)
+        return selected_tuple
+
+    @staticmethod
+    def greedy_of_less_adding_cost(locations_list, start_loc=None, end_loc=None):
+        all_locations_to_consider = [*locations_list]
+        if start_loc is not None:
+            all_locations_to_consider.append(start_loc)
+        if end_loc is not None:
+            all_locations_to_consider.append(end_loc)
+        temporary_route = Route(all_locations_to_consider)
+
+        starter_index = 0 if start_loc is None else 1
+        end_index = len(all_locations_to_consider) if end_loc is None else len(all_locations_to_consider) - 1
+
+        if start_loc is not None:
+            temporary_route.add_location(start_loc)
+        if end_loc is not None:
+            temporary_route.add_location(end_loc, index=len(temporary_route))
+
+        for loc in locations_list:
+            best_index = None
+            best_val = float('inf')
+            for index in range(len(temporary_route) + 1):
+                index_to_insert = max(starter_index, index)
+                index_to_insert = min(index_to_insert, end_index)
+                temporary_route.add_location(loc, index=index_to_insert)
+
+                cost_of_insertion = temporary_route.get_total_distance_of_location(index_to_insert)
+                if cost_of_insertion < best_val:
+                    best_index = index_to_insert
+                    best_val = cost_of_insertion
+
+                temporary_route.remove_location(loc)
+
+            temporary_route.add_location(loc, best_index)
+        return list(temporary_route.sequence_list)

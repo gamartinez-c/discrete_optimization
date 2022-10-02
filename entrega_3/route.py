@@ -10,7 +10,7 @@ class Route:
         self.total_distance = 0
 
     def add_location(self, location, index=None):
-        if index is None or index >= len(self):
+        if index is None or index > len(self):
             index = len(self) - 1
 
         if len(self) != 0:
@@ -34,12 +34,12 @@ class Route:
     def get_distance_to_location(self, location_index):
         prev_location = self.get_sequence_location(location_index - 1)
         curr_location = self.get_sequence_location(location_index)
-        return prev_location.distance_to(curr_location)
+        return prev_location.distance_to_loc(curr_location)
 
     def get_distance_from_location(self, location_index):
         curr_location = self.get_sequence_location(location_index)
         foll_location = self.get_sequence_location(location_index + 1)
-        return foll_location.distance_to(curr_location)
+        return foll_location.distance_to_loc(curr_location)
 
     def get_total_distance_of_location(self, location_index):
         total_distance = 0
@@ -78,7 +78,7 @@ class Route:
         src_loc = self.get_sequence_location(src_loc_index)
         dest_loc = self.get_sequence_location(dest_loc_index)
         worst_src_and_dest = (src_loc, dest_loc)
-        worst_distance = src_loc.distance_to(dest_loc)
+        worst_distance = src_loc.distance_to_loc(dest_loc)
 
         src_loc_index += 1
         dest_loc_index += 1
@@ -88,7 +88,7 @@ class Route:
         while src_loc_index != 0:
             src_loc = self.get_sequence_location(src_loc_index)
             dest_loc = self.get_sequence_location(dest_loc_index)
-            distance_between_src_and_dest = src_loc.distance_to(dest_loc)
+            distance_between_src_and_dest = src_loc.distance_to_loc(dest_loc)
             if worst_distance < distance_between_src_and_dest:
                 worst_src_and_dest = (src_loc, dest_loc)
                 worst_distance = distance_between_src_and_dest
@@ -102,6 +102,7 @@ class Route:
             dest_loc_index = dest_loc_index % len(self)
         return worst_src_and_dest
 
+    # FixMe: fix the error where order of index can afect final solution.
     def swap_locations(self, location_1, location_2):
         index_of_location_1 = self.sequence_list.index(location_1)
         index_of_location_2 = self.sequence_list.index(location_2)
