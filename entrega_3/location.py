@@ -1,5 +1,8 @@
+import logging
 import math
 import random
+import time
+
 import numpy as np
 import pandas as pd
 from sklearn.cluster import KMeans
@@ -220,7 +223,7 @@ class Location:
         kmeans.fit(x)
         k_distances.append(kmeans.inertia_)
         while (amount_of_clusters < 2 or relative_distance > 0.1) and amount_of_clusters < (len(locations_list) - 1):
-            amount_of_clusters += 1
+            amount_of_clusters += 4
             kmeans = KMeans(n_clusters=amount_of_clusters)
             kmeans.fit(x)
             k_distances.append(kmeans.inertia_)
@@ -261,7 +264,10 @@ class Location:
                         exclude_loc.append(dict_connector[cluster_label_bis])
 
             nearest_tuple = Location.nearest_points_from_groups(clusters[current_cluster_label], clusters[following_cluster_label], exclude_loc=exclude_loc)
-            end_connection[current_cluster_label] = nearest_tuple[0]
+            try:
+                end_connection[current_cluster_label] = nearest_tuple[0]
+            except:
+                Location.nearest_points_from_groups(clusters[current_cluster_label], clusters[following_cluster_label], exclude_loc=exclude_loc)
             start_connector[following_cluster_label] = nearest_tuple[1]
 
         sorted_cluster_dict = {}
@@ -286,6 +292,11 @@ class Location:
         selected_tuple = None
         smallest_dist = float('inf')
         exclude_loc = [] if exclude_loc is None else exclude_loc
+
+        if len(loc_group_1) == 1 and len(set(loc_group_1) - set(exclude_loc)) == 0:
+            exclude_loc.remove(loc_group_1[0])
+        if len(loc_group_2) == 1 and len(set(loc_group_2) - set(exclude_loc)) == 0:
+            exclude_loc.remove(loc_group_2[0])
 
         for loc_1 in loc_group_1:
             for loc_2 in loc_group_2:
@@ -313,7 +324,8 @@ class Location:
         for loc in locations_list:
             best_index = None
             best_val = float('inf')
-            for index in range(len(temporary_route) + 1):
+            for index in range(0, len(temporary_route) + 1, 3):
+                # Fixme place if instead.
                 index_to_insert = max(starter_index, index)
                 index_to_insert = min(index_to_insert, end_index)
                 temporary_route.add_location(loc, index=index_to_insert)

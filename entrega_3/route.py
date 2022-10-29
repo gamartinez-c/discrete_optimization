@@ -32,13 +32,13 @@ class Route:
         return self.total_distance
 
     def get_distance_to_location(self, location_index):
-        prev_location = self.get_sequence_location(location_index - 1)
-        curr_location = self.get_sequence_location(location_index)
+        prev_location = self.get_location_by_index(location_index - 1)
+        curr_location = self.get_location_by_index(location_index)
         return prev_location.distance_to_loc(curr_location)
 
     def get_distance_from_location(self, location_index):
-        curr_location = self.get_sequence_location(location_index)
-        foll_location = self.get_sequence_location(location_index + 1)
+        curr_location = self.get_location_by_index(location_index)
+        foll_location = self.get_location_by_index(location_index + 1)
         return foll_location.distance_to_loc(curr_location)
 
     def get_total_distance_of_location(self, location_index):
@@ -53,7 +53,7 @@ class Route:
         picked_location_index = self.sequence_list.index(picked_location)
         biggest_distance = self.get_total_distance_of_location(picked_location_index)
         for location_index in range(0, len(self)):
-            current_location = self.get_sequence_location(location_index)
+            current_location = self.get_location_by_index(location_index)
             if current_location not in exclude_locations:
                 total_distance_for_location = self.get_total_distance_of_location(location_index)
                 if biggest_distance < total_distance_for_location:
@@ -62,7 +62,7 @@ class Route:
 
         return picked_location
 
-    def get_sequence_location(self, index):
+    def get_location_by_index(self, index):
         index = index % len(self)
         return self.sequence_list[index]
 
@@ -75,8 +75,8 @@ class Route:
         if (src_loc_index, dest_loc_index) in exclude_list_index:
             src_loc_index += 1
             dest_loc_index += 1
-        src_loc = self.get_sequence_location(src_loc_index)
-        dest_loc = self.get_sequence_location(dest_loc_index)
+        src_loc = self.get_location_by_index(src_loc_index)
+        dest_loc = self.get_location_by_index(dest_loc_index)
         worst_src_and_dest = (src_loc, dest_loc)
         worst_distance = src_loc.distance_to_loc(dest_loc)
 
@@ -86,8 +86,8 @@ class Route:
         dest_loc_index = dest_loc_index % len(self)
 
         while src_loc_index != 0:
-            src_loc = self.get_sequence_location(src_loc_index)
-            dest_loc = self.get_sequence_location(dest_loc_index)
+            src_loc = self.get_location_by_index(src_loc_index)
+            dest_loc = self.get_location_by_index(dest_loc_index)
             distance_between_src_and_dest = src_loc.distance_to_loc(dest_loc)
             if worst_distance < distance_between_src_and_dest:
                 worst_src_and_dest = (src_loc, dest_loc)
@@ -129,10 +129,10 @@ class Route:
         if len(self) == len(self.locations_to_consider):
             position_x_in_route = []
             position_y_in_route = []
-            for location in [self.get_sequence_location(0), self.get_sequence_location(-1)]:
+            for location in [self.get_location_by_index(0), self.get_location_by_index(-1)]:
                 position_x_in_route.append(location.x)
                 position_y_in_route.append(location.y)
-                plt.plot(position_x_in_route, position_y_in_route, color='red')
+            plt.plot(position_x_in_route, position_y_in_route, color='red')
 
         locations_not_in_route = set(self.locations_to_consider) - set(self.sequence_list)
         position_x_not_in_route = []

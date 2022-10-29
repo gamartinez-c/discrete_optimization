@@ -1,5 +1,7 @@
+import itertools
 import random
 import logging
+import time
 
 from route import Route
 from location import Location
@@ -68,6 +70,23 @@ class Solution:
         self.route.remove_location(location_to_improve)
         self.route.add_location(location_to_improve, index=best_position)
 
+    def improve_by_2_opt(self, available_time=1*60*60):
+        start_time = time.time()
+        improve = True
+        while improve:
+            improve = False
+            original_obj_val = self.get_obj_value()
+            combinations = itertools.combinations(range(len(self.route)), 2)
+            for start_index, end_index in combinations:
+                self.make_2_opt_improvement(start_index, end_index)
+            final_obj_val = self.get_obj_value()
+            improve = final_obj_val < original_obj_val
+
+            current_time = time.time()
+            time_spent = current_time - start_time
+            if time_spent > available_time:
+                break
+
     def improve_looking_for_neighbours(self, loops_for_swaps=300, loops_for_breaking_bad_connections=300):
         initial_value = self.get_obj_value()
 
@@ -115,34 +134,40 @@ class Solution:
         message += "| F Val: " + str(int(final_value))
         logging.info(message)
 
-    def improve_just_1_link(self, src_loc, dest_loc):
+    def make_2_opt_improvement(self, index_to_start_extraction, index_of_end_extraction):
         original_sequence = self.route.sequence_list.copy()
         original_obj_value = self.get_obj_value()
 
-        loc_to_exclude_list = [src_loc, self.route.get_sequence_location(self.route.sequence_list.index(dest_loc)+1)]
-        ideal_loc_for_dest = dest_loc.get_nearest_location(self.list_of_locations, exclude_location_list=loc_to_exclude_list)
-        index_of_ideal_loc_for_dest = self.route.sequence_list.index(ideal_loc_for_dest)
-        index_of_src = self.route.sequence_list.index(src_loc)
-        index_of_dest = self.route.sequence_list.index(dest_loc)
-
-        index_to_start_extraction = (index_of_dest + 1) % len(self.route)
-        index_of_end_extraction = index_of_ideal_loc_for_dest
-
         if index_to_start_extraction < index_of_end_extraction:
-            sequence_to_extract = self.route.sequence_list[index_to_start_extraction: index_of_ideal_loc_for_dest]
+            new_sequence_to_insert = self.route.sequence_list[index_to_start_extraction: index_of_end_extraction + 1]
         else:
-            sequence_to_extract = []
-            sequence_to_extract += self.route.sequence_list[index_to_start_extraction:]
-            sequence_to_extract += self.route.sequence_list[:index_to_start_extraction]
+            new_sequence_to_insert = []
+            new_sequence_to_insert += self.route.sequence_list[index_to_start_extraction:]
+            new_sequence_to_insert += self.route.sequence_list[:index_of_end_extraction + 1]
 
-        for location in sequence_to_extract:
+        for location in new_sequence_to_insert:
             self.route.remove_location(location)
         # By how we are inserting the sequence is reverse that is what we need
-        for location in sequence_to_extract:
-            self.route.add_location(location, index_of_src + 1)
+        for location in new_sequence_to_insert:
+            if index_to_start_extraction < index_of_end_extraction:
+                index_to_insert_on = index_to_start_extraction
+            else:
+                index_to_insert_on = len(self.route)
+            self.route.add_location(location, index_to_insert_on)
 
         if self.get_obj_value() > original_obj_value:
             self.route.reset_route_with(original_sequence)
+
+    def improve_just_1_link(self, src_loc_of_link, dest_loc_of_link):
+        index_of_dest = self.route.sequence_list.index(dest_loc_of_link)
+        loc_to_exclude_list = [src_loc_of_link, self.route.get_location_by_index(index_of_dest + 1)]
+        loc_to_change_src_with = dest_loc_of_link.get_nearest_location(self.list_of_locations, exclude_location_list=loc_to_exclude_list)
+        index_loc_to_change_src_with = self.route.sequence_list.index(loc_to_change_src_with)
+
+        index_to_start_extraction = index_of_dest
+        index_of_end_extraction = (index_loc_to_change_src_with - 1) % len(self.route)
+
+        self.make_2_opt_improvement(index_to_start_extraction, index_of_end_extraction)
 
     def get_obj_value(self):
         return self.route.get_total_distance_travel()
