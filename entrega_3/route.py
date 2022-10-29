@@ -155,6 +155,12 @@ class Route:
         else:
             plt.show()
 
+    def copy(self):
+        copy_route = Route(self.locations_to_consider)
+        copy_route.sequence_list = [location for location in self.sequence_list]
+        copy_route.total_distance = self.total_distance
+        return copy_route
+
     def __hash__(self):
         return '-'.join([str(location.id) for location in self.sequence_list])
 
