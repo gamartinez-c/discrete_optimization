@@ -3,6 +3,7 @@ import itertools
 import logging
 
 from route import Route
+from location import Location
 
 
 class Neighbours:
@@ -26,7 +27,7 @@ class Neighbours:
         if count_locations < 100:
             available_time = 0.25 * 60 * 60
         elif count_locations < 1000:
-            available_time = 0.4 * 6.4 * 0 * 60
+            available_time = 0.4 * 60 * 60
         elif count_locations < 2000:
             available_time = 0.75 * 60 * 60
         else:
@@ -82,21 +83,30 @@ class Neighbours:
         improved = True
         while improved and iterations < num_iterations:
             original_route = self.route.copy()
-            route_imp_sol = self.route.copy()
-            route_2_opt = self.route.copy()
             initial_obj_value = self.route.get_total_distance_travel()
 
+            route_imp_sol = self.route.copy()
             self.route = route_imp_sol
             location_to_move = self.route.get_loc_with_most_travel_times()
             self.change_location_position(location_to_move)
 
-            self.route = route_2_opt
-            worst_connection_tuple = self.route.get_locs_of_worst_connection()
-            self.improve_2_opt(worst_connection_tuple[0], worst_connection_tuple[1])
+            nodes_to_exclude = []
+            first_worst_connection = self.route.get_locs_of_worst_connection()
+            nodes_to_exclude.append(first_worst_connection[1])
+            node_to_reconnect = first_worst_connection[0]
+            best_route_2_opt = original_route.copy()
+            for i in range(10):
+                route_2_opt = original_route.copy()
+                self.route = route_2_opt
+                node_to_connect_to = node_to_reconnect.get_nearest_location(self.route.locations_to_consider, exclude_location_list=nodes_to_exclude)
+                self.improve_2_opt(node_to_reconnect, node_to_connect_to)
+                nodes_to_exclude.append(node_to_connect_to)
+                if best_route_2_opt.get_total_distance_travel() > route_2_opt.get_total_distance_travel():
+                    best_route_2_opt = route_2_opt
 
             best_route_improvement = original_route
-            for route in [route_2_opt, route_imp_sol]:
-                if route.get_total_distance_travel() < best_route_improvement:
+            for route in [best_route_2_opt, route_imp_sol]:
+                if route.get_total_distance_travel() < best_route_improvement.get_total_distance_travel():
                     best_route_improvement = route
             final_obj_value = best_route_improvement.get_total_distance_travel()
             improved = final_obj_value < initial_obj_value
@@ -104,8 +114,10 @@ class Neighbours:
                 self.route = original_route
 
             iterations += 1
-            iteration_2_opt += 1
-            iterations_changing_locations += 1
+            if best_route_improvement == route_2_opt:
+                iteration_2_opt += 1
+            else:
+                iterations_changing_locations += 1
 
         return {'improve_1_link': iterations_changing_locations, '2_opt': iteration_2_opt}
 

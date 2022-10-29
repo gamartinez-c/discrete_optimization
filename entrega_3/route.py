@@ -70,36 +70,27 @@ class Route:
         exclude_list = [] if exclude_list is None else exclude_list
         exclude_list_index = [(self.sequence_list.index(src), self.sequence_list.index(dest)) for src, dest in exclude_list]
 
-        src_loc_index = 0
-        dest_loc_index = 1
-        if (src_loc_index, dest_loc_index) in exclude_list_index:
-            src_loc_index += 1
-            dest_loc_index += 1
-        src_loc = self.get_location_by_index(src_loc_index)
-        dest_loc = self.get_location_by_index(dest_loc_index)
+        index = 0
+        if (index, index + 1) in exclude_list_index:
+            index += 1
+        src_loc = self.get_location_by_index(index)
+        dest_loc = self.get_location_by_index(index + 1)
         worst_src_and_dest = (src_loc, dest_loc)
         worst_distance = src_loc.distance_to_loc(dest_loc)
 
-        src_loc_index += 1
-        dest_loc_index += 1
-        src_loc_index = src_loc_index % len(self)
-        dest_loc_index = dest_loc_index % len(self)
-
-        while src_loc_index != 0:
-            src_loc = self.get_location_by_index(src_loc_index)
-            dest_loc = self.get_location_by_index(dest_loc_index)
+        index += 1
+        while index != 0:
+            src_loc = self.get_location_by_index(index)
+            dest_loc = self.get_location_by_index(index + 1)
             distance_between_src_and_dest = src_loc.distance_to_loc(dest_loc)
             if worst_distance < distance_between_src_and_dest:
                 worst_src_and_dest = (src_loc, dest_loc)
                 worst_distance = distance_between_src_and_dest
 
-            src_loc_index += 1
-            dest_loc_index += 1
-            if (src_loc_index, dest_loc_index) in exclude_list_index:
-                src_loc_index += 1
-                dest_loc_index += 1
-            src_loc_index = src_loc_index % len(self)
-            dest_loc_index = dest_loc_index % len(self)
+            index += 1
+            if (index, index + 1) in exclude_list_index:
+                index += 1
+            index = index % len(self)
         return worst_src_and_dest
 
     # FixMe: fix the error where order of index can afect final solution.

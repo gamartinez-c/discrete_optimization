@@ -28,10 +28,11 @@ def solve_it(input_data_list):
     use_simple_approach = False
     if len(location_list) < 500:
         use_simple_approach = True
+    use_simple_approach = False
 
     if use_simple_approach:
         amount_of_random = 0
-        amount_of_best_sol_to_imp, amount_of_bad_sol_to_imp = (1, 1)
+        amount_of_best_sol_to_imp, amount_of_bad_sol_to_imp = (1, 0)
     else:
         amount_of_random = 100 if len(location_list) < 1000 else 5
         if len(location_list) < 1000:
@@ -42,7 +43,7 @@ def solve_it(input_data_list):
             amount_of_best_sol_to_imp, amount_of_bad_sol_to_imp = (1, 1)
     amount_of_solutions_to_improve = amount_of_best_sol_to_imp + amount_of_bad_sol_to_imp
     first_locations_approachs = ['origin'] + ['random']*amount_of_random
-    greedy_heuristics_approaches = ['min_distance'] + ['mst']*1 + ['clockwise']*1 + ['cluster_1']*0 + ['cluster_2']*0
+    greedy_heuristics_approaches = ['min_distance'] + ['mst']*1 + ['clockwise']*0 + ['cluster_1']*0 + ['cluster_2']*0
 
     logging.info('Finish loading Nodes.')
 
@@ -75,7 +76,6 @@ def solve_it(input_data_list):
 
     for solution in solutions_to_improve:
         solution.improve_solution(use_simple_approach)
-        solution.print_solution_path()
 
     end_neighbours = time.time()
     logging.info('Neighbour Time: ' + str(round(end_neighbours - end_initial_solution, 2)))
