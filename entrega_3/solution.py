@@ -5,6 +5,7 @@ import time
 
 from route import Route
 from location import Location
+import initial_solutions
 
 
 class Solution:
@@ -33,11 +34,11 @@ class Solution:
         location_list = self.list_of_locations.copy()
         heuristic = None
         if greedy_approach == "min_distance":
-            heuristic = Location.get_locations_ordered_by_distance
+            heuristic = initial_solutions.Greedy()  # Location.get_locations_ordered_by_distance
         elif greedy_approach == "clockwise":
-            heuristic = Location.get_locations_ordered_by_anti_clockwise
+            heuristic = initial_solutions.Clock()  # Location.get_locations_ordered_by_anti_clockwise
         elif greedy_approach == 'mst':
-            heuristic = Location.get_mst
+            heuristic = initial_solutions.MST()  # Location.get_mst
         elif greedy_approach == 'cluster_1' or greedy_approach == 'cluster_2':
             heuristic = Location.get_clustered_locations_solution
             if greedy_approach == 'cluster_1':
