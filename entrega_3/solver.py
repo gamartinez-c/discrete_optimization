@@ -25,15 +25,13 @@ def solve_it(input_data_list):
     logging.info("Amount of Nodes: " + str(lines[0]))
     location_list = Location.load_locations(lines[1:-1])
 
-    amount_of_best_sol_to_imp, amount_of_bad_sol_to_imp = (None, None)
-    amount_of_solutions_to_improve = None
-
     use_simple_approach = False
     if len(location_list) < 500:
         use_simple_approach = True
 
     if use_simple_approach:
         amount_of_random = 0
+        amount_of_best_sol_to_imp, amount_of_bad_sol_to_imp = (1, 1)
     else:
         amount_of_random = 100 if len(location_list) < 1000 else 5
         if len(location_list) < 1000:
@@ -42,9 +40,9 @@ def solve_it(input_data_list):
             amount_of_best_sol_to_imp, amount_of_bad_sol_to_imp = (2, 1)
         else:
             amount_of_best_sol_to_imp, amount_of_bad_sol_to_imp = (1, 1)
-        amount_of_solutions_to_improve = amount_of_best_sol_to_imp + amount_of_bad_sol_to_imp
+    amount_of_solutions_to_improve = amount_of_best_sol_to_imp + amount_of_bad_sol_to_imp
     first_locations_approachs = ['origin'] + ['random']*amount_of_random
-    greedy_heuristics_approaches = ['min_distance'] + ['mst']*0 + ['clockwise']*0 + ['cluster_1']*0 + ['cluster_2']
+    greedy_heuristics_approaches = ['min_distance'] + ['mst']*1 + ['clockwise']*1 + ['cluster_1']*0 + ['cluster_2']*0
 
     logging.info('Finish loading Nodes.')
 
@@ -55,13 +53,11 @@ def solve_it(input_data_list):
     start_time_initial_attribution = time.time()
     logging.info("Time Loading location: " + str(round(start_time_initial_attribution - start_time_load_location, 2)))
 
-    # #######################################################################
-    # ####################### Build Initial Solutions #######################
-    # #######################################################################
+    # #################################################################################
+    # ############################ Build Initial Solutions ############################
+    # #################################################################################
     # visit the nodes in the order they appear in the file
     solution_comb = [*itertools.product(first_locations_approachs, greedy_heuristics_approaches)]
-    while ('random', 'cluster_1') in solution_comb:
-        solution_comb.remove(('random', 'cluster_1'))
     for first_location_name, heuristic_name in solution_comb:
         solution = Solution(location_list)
         solution.solve_initial_solution_for_route(first_location_name, heuristic_name)
@@ -70,32 +66,14 @@ def solve_it(input_data_list):
     time_in_initial_solution = end_initial_solution - start_time_initial_attribution
     logging.info('Initial Solution Time: ' + str(round(time_in_initial_solution, 2)))
 
-    # #######################################################################
-    # ####################### Neighbours #######################
-    # #######################################################################
+    # ####################################################################
+    # ############################ Neighbours ############################
+    # ####################################################################
 
-    solution_list = Solution.list_of_solutions.copy()
-
-    # Pick best solutions to improve.
-    solution_list.sort(key=lambda sol: sol.get_obj_value())
-    solutions_to_add_set = set(solution_list[:amount_of_best_sol_to_imp] + solution_list[-amount_of_bad_sol_to_imp:])
-    sol_dict_by_const_appr = {greedy_approach: set() for greedy_approach in greedy_heuristics_approaches}
-    for solution in solutions_to_add_set:
-        sol_dict_by_const_appr[solution.greedy_constructive].add(solution)
-
-    i = 0
-    solution_group_count = [len(solution_group) for solution_group in sol_dict_by_const_appr.values()]
-    while min(solution_group_count) <= amount_of_solutions_to_improve and sum(solution_group_count) < len(solution_list) and amount_of_solutions_to_improve + i < len(
-            solution_list):
-        solution = solution_list[amount_of_best_sol_to_imp + i]
-        if len(sol_dict_by_const_appr[solution.greedy_constructive]) <= amount_of_best_sol_to_imp:
-            sol_dict_by_const_appr[solution.greedy_constructive].add(solution)
-        solution_group_count = [len(solution_group) for solution_group in sol_dict_by_const_appr.values()]
-        i += 1
-    sol_dict_by_const_appr = {sol_greedy_name: list(solutions) for sol_greedy_name, solutions in sol_dict_by_const_appr.items()}
+    solutions_to_improve = Solution.get_solutions_to_improve_list(amount_of_best_sol_to_imp, amount_of_bad_sol_to_imp, greedy_heuristics_approaches, amount_of_solutions_to_improve)
     logging.info('Solutions have been picked')
 
-    for solution in solution_list:
+    for solution in solutions_to_improve:
         solution.improve_solution(use_simple_approach)
         solution.print_solution_path()
 

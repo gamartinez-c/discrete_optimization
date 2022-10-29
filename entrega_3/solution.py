@@ -56,6 +56,8 @@ class Solution:
         for location in location_list:
             self.route.add_location(location)
 
+        self.value_without_neighbours = self.get_obj_value()
+
     def improve_solution(self, use_simple_approach):
         neighbour = Neighbours(self.route)
         if use_simple_approach:
@@ -63,6 +65,7 @@ class Solution:
         else:
             self.neighbour_iterations = neighbour.best_improvement()
         self.route = neighbour.route.copy()
+        self.print_solution_path()
 
     def get_obj_value(self):
         return self.route.get_total_distance_travel()
@@ -101,3 +104,32 @@ class Solution:
                 best_solution = solution
                 best_obj = solution.get_obj_value()
         return best_solution
+
+    @staticmethod
+    def get_solutions_to_improve_list(amount_of_best_sol_to_imp, amount_of_bad_sol_to_imp, greedy_heuristics_approaches, amount_of_solutions_to_improve):
+        solution_list = Solution.list_of_solutions.copy()
+
+        # Pick best solutions to improve.
+        solution_list.sort(key=lambda sol: sol.get_obj_value())
+        solutions_to_add_set = set(solution_list[:amount_of_best_sol_to_imp] + solution_list[-amount_of_bad_sol_to_imp:])
+        sol_dict_by_const_appr = {greedy_approach: set() for greedy_approach in greedy_heuristics_approaches}
+        for solution in solutions_to_add_set:
+            sol_dict_by_const_appr[solution.greedy_constructive].add(solution)
+
+        i = 0
+        solution_group_count = [len(solution_group) for solution_group in sol_dict_by_const_appr.values()]
+        while min(solution_group_count) <= amount_of_solutions_to_improve \
+                and sum(solution_group_count) < len(solution_list) \
+                and amount_of_solutions_to_improve + i < len(solution_list):
+            solution = solution_list[amount_of_best_sol_to_imp + i]
+            if len(sol_dict_by_const_appr[solution.greedy_constructive]) <= amount_of_best_sol_to_imp:
+                sol_dict_by_const_appr[solution.greedy_constructive].add(solution)
+            solution_group_count = [len(solution_group) for solution_group in sol_dict_by_const_appr.values()]
+            i += 1
+        sol_dict_by_const_appr = {initial_sol_name: list(solutions) for initial_sol_name, solutions in sol_dict_by_const_appr.items()}
+
+        solutions_to_improve = []
+        for solutions in sol_dict_by_const_appr.values():
+            solutions_to_improve.extend(solutions)
+
+        return solutions_to_improve

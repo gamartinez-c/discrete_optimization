@@ -49,9 +49,8 @@ class Cluster(InitialSolution):
 
         cluster_locations_to_sort = cluster_locations_original.copy()
         # cluster_locations_to_sort = Location.greedy_of_less_adding_cost(cluster_locations_to_sort)
-        # FIXME
-        cluster_locations_to_sort = Greedy(cluster_locations_to_sort)
-        # Location.get_locations_ordered_by_distance(cluster_locations_to_sort)
+        initial_sol = Greedy(cluster_locations_to_sort)
+        cluster_locations_to_sort = initial_sol.solve()
 
         # Find which of each cluster will be connected to each other loc of other cluster.
         start_connector = {}

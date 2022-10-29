@@ -6,7 +6,7 @@ from initial_solutions.initial_solution import InitialSolution
 
 class Clock(InitialSolution):
 
-    def get_locations_ordered_by_anti_clockwise(self):
+    def solve(self):
         first_location = self.first_location if self.first_location is not None else random.choice(self.locations_list)
         locations_return_list = []
 
