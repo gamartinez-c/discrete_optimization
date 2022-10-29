@@ -1,5 +1,5 @@
 from route import Route
-from initial_solution import InitialSolution
+from initial_solutions.initial_solution import InitialSolution
 
 
 class LessAddingCost(InitialSolution):

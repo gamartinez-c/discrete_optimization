@@ -1,7 +1,7 @@
 import random
 
-from mst_node import MSTNode
-from initial_solution import InitialSolution
+from initial_solutions.mst_node import MSTNode
+from initial_solutions.initial_solution import InitialSolution
 
 
 class MST(InitialSolution):

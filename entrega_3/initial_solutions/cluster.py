@@ -2,13 +2,14 @@ import pandas as pd
 from sklearn.cluster import KMeans
 
 from location import Location
-from initial_solution import InitialSolution
+from initial_solutions.greedy import Greedy
+from initial_solutions.initial_solution import InitialSolution
 
 
 class Cluster(InitialSolution):
 
     def __init__(self, locations_list, first_location, type_of_assignation=1):
-        InitialSolution.__init__(locations_list, first_location)
+        super().__init__(locations_list, first_location)
         self.type_of_assignation = type_of_assignation
 
     def solve(self):
@@ -48,7 +49,9 @@ class Cluster(InitialSolution):
 
         cluster_locations_to_sort = cluster_locations_original.copy()
         # cluster_locations_to_sort = Location.greedy_of_less_adding_cost(cluster_locations_to_sort)
-        cluster_locations_to_sort = Location.get_locations_ordered_by_distance(cluster_locations_to_sort)
+        # FIXME
+        cluster_locations_to_sort = Greedy(cluster_locations_to_sort)
+        # Location.get_locations_ordered_by_distance(cluster_locations_to_sort)
 
         # Find which of each cluster will be connected to each other loc of other cluster.
         start_connector = {}

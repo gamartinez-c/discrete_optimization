@@ -1,7 +1,7 @@
 import random
 
 from location import Location
-from initial_solution import InitialSolution
+from initial_solutions.initial_solution import InitialSolution
 
 
 class Greedy(InitialSolution):

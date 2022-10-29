@@ -1,7 +1,7 @@
 import random
 import numpy as np
 
-from initial_solution import InitialSolution
+from initial_solutions.initial_solution import InitialSolution
 
 
 class Clock(InitialSolution):

@@ -66,7 +66,6 @@ class Location:
     def __hash__(self):
         return hash(self.id)
 
-
     @staticmethod
     def get_nearest_location_to_location(locations_list, x=0, y=0):
         first_location = locations_list[0]

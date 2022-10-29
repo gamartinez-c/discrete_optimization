@@ -1,8 +1,8 @@
 import random
 import logging
 
-import improvements
-import initial_solutions
+from improvements.neighbours import Neighbours
+from initial_solutions import *
 
 from route import Route
 from location import Location
@@ -37,28 +37,27 @@ class Solution:
         location_list = self.list_of_locations.copy()
         heuristic = None
         if greedy_approach == "min_distance":
-            heuristic = initial_solutions.Greedy(location_list, first_location)
+            heuristic = Greedy(location_list, first_location)
         elif greedy_approach == "clockwise":
-            heuristic = initial_solutions.Clock(location_list, first_location)
+            heuristic = Clock(location_list, first_location)
         elif greedy_approach == 'mst':
-            heuristic = initial_solutions.MST(location_list, first_location)
+            heuristic = MST(location_list, first_location)
         elif greedy_approach == 'cluster_1' or greedy_approach == 'cluster_2':
             if greedy_approach == 'cluster_1':
                 type_of_assignation = 1
             else:
                 type_of_assignation = 2
-            heuristic = initial_solutions.Cluster(location_list, first_location, type_of_assignation)
+            heuristic = Cluster(location_list, first_location, type_of_assignation)
         else:
             print("The Greedy approach:", greedy_approach, "is not known")
             exit()
 
-        heuristic.solve()
-        location_list = heuristic.get_solution()
+        location_list = heuristic.solve()
         for location in location_list:
             self.route.add_location(location)
 
     def improve_solution(self, use_simple_approach):
-        neighbour = improvements.Neighbours(self.route)
+        neighbour = Neighbours(self.route)
         if use_simple_approach:
             self.neighbour_iterations = neighbour.improve_by_2_opt()
         else:
