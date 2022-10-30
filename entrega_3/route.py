@@ -45,13 +45,16 @@ class Route:
         index_of_location = self.sequence_list.index(list_of_locations[0])
 
         # plus 1 because it is the remaining extra, that we add at the end.
-        for offset in range(len(list_of_locations) + 1):
+        for offset in range(len(list_of_locations)):
             self.total_distance -= self.get_distance_to_location(index_of_location + offset)
+        if len(list_of_locations) < len(self):
+            self.total_distance -= self.get_distance_to_location(index_of_location + len(list_of_locations))
+
         for location in list_of_locations:
             self.sequence_list.remove(location)
 
         if len(self) != 0:
-            self.total_distance += self.get_distance_to_location(index_of_location)
+            self.total_distance += self.get_distance_to_location(min(index_of_location, len(self)))
 
     def get_total_distance_travel(self):
         return self.total_distance
