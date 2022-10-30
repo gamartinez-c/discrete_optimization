@@ -2,6 +2,7 @@ import random
 import logging
 
 from improvements.neighbours import Neighbours
+from improvements.simulated_annealing import SimulatedAnnealing
 from initial_solutions import *
 
 from route import Route
@@ -58,11 +59,15 @@ class Solution:
 
         self.value_without_neighbours = self.get_obj_value()
 
-    def improve_solution(self, use_simple_approach):
-        neighbour = Neighbours(self.route)
-        if use_simple_approach:
+    def improve_solution(self, approach):
+        if approach == 'simple':
+            neighbour = Neighbours(self.route)
             self.neighbour_iterations = neighbour.improve_by_2_opt()
+        elif approach == 'simulated_annealing':
+            neighbour = SimulatedAnnealing(self.route, 150, 'swap', 0.99)
+            self.neighbour_iterations = neighbour.improve()
         else:
+            neighbour = Neighbours(self.route)
             self.neighbour_iterations = neighbour.best_improvement()
         self.route = neighbour.route.copy()
         self.print_solution_path()

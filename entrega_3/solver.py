@@ -25,13 +25,12 @@ def solve_it(input_data_list):
     logging.info("Amount of Nodes: " + str(lines[0]))
     location_list = Location.load_locations(lines[1:-1])
 
-    use_simple_approach = False
+    approach_neighbours = 'simple'
     if len(location_list) < 500:
-        use_simple_approach = True
-    use_simple_approach = False
+        approach_neighbours = 'simulated_annealing'
 
-    if use_simple_approach:
-        amount_of_random = 0
+    if approach_neighbours in ['simple', 'simulated_annealing']:
+        amount_of_random = 1
         amount_of_best_sol_to_imp, amount_of_bad_sol_to_imp = (1, 0)
     else:
         amount_of_random = 100 if len(location_list) < 1000 else 5
@@ -75,7 +74,7 @@ def solve_it(input_data_list):
     logging.info('Solutions have been picked')
 
     for solution in solutions_to_improve:
-        solution.improve_solution(use_simple_approach)
+        solution.improve_solution(approach_neighbours)
 
     end_neighbours = time.time()
     logging.info('Neighbour Time: ' + str(round(end_neighbours - end_initial_solution, 2)))

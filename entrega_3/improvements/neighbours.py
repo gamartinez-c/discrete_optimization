@@ -34,6 +34,10 @@ class Neighbours:
             available_time = 1 * 60 * 60
         return available_time
 
+    def has_available_time(self, current_running_time):
+        available_time = self.get_available_time()
+        return available_time > current_running_time
+
     def change_location_position(self, location_to_improve):
         initial_index = self.route.sequence_list.index(location_to_improve)
 
@@ -57,11 +61,12 @@ class Neighbours:
         available_time = self.get_available_time()
         improve = True
         amount_of_iterations = 0
+        time_spent = 0
         while improve:
             original_obj_val = self.route.get_total_distance_travel()
-            combinations = itertools.combinations(range(len(self.route)), 2)
-            for start_index, end_index in combinations:
-                self.improve_2_opt_by_index(start_index, end_index)
+            for start_index in range(len(self.route) - 1):
+                for end_index in range(start_index + 1, len(self.route)):
+                    self.improve_2_opt_by_index(start_index, end_index)
             final_obj_val = self.route.get_total_distance_travel()
             improve = final_obj_val < original_obj_val
 
@@ -72,7 +77,19 @@ class Neighbours:
             if time_spent > available_time:
                 break
 
-        return {'2_opt': amount_of_iterations}
+        return {'2_opt': amount_of_iterations, 'Exit time': (time_spent > available_time)}
+
+    def swap_2_index(self, index_1, index_2):
+        loc_1 = self.route.get_location_by_index(index_1)
+        loc_2 = self.route.get_location_by_index(index_2)
+        self.route.remove_location(loc_2)
+        self.route.remove_location(loc_1)
+        if index_1 < index_2:
+            self.route.add_location(loc_2, index_1)
+            self.route.add_location(loc_1, index_2)
+        else:
+            self.route.add_location(loc_1, index_2)
+            self.route.add_location(loc_2, index_1)
 
     def best_improvement(self):
         num_iterations = self.get_number_of_iterations()
@@ -122,13 +139,13 @@ class Neighbours:
         return {'improve_1_link': iterations_changing_locations, '2_opt': iteration_2_opt}
 
     def improve_2_opt_by_index(self, index_to_start_extraction, index_of_end_extraction):
-        original_sequence = self.route.sequence_list.copy()
+        original_route = self.route.copy()
         original_obj_value = self.route.get_total_distance_travel()
 
         self.make_2_opt_movement_by_index(index_to_start_extraction, index_of_end_extraction)
 
         if self.route.get_total_distance_travel() > original_obj_value:
-            self.route.reset_route_with(original_sequence)
+            self.route = original_route
 
     def make_2_opt_movement_by_index(self, index_to_start_extraction, index_of_end_extraction):
         if index_to_start_extraction < index_of_end_extraction:
@@ -138,15 +155,14 @@ class Neighbours:
             new_sequence_to_insert += self.route.sequence_list[index_to_start_extraction:]
             new_sequence_to_insert += self.route.sequence_list[:index_of_end_extraction + 1]
 
-        for location in new_sequence_to_insert:
-            self.route.remove_location(location)
+        self.route.remove_multiple_location_sequenced(new_sequence_to_insert)
         # By how we are inserting the sequence is reverse that is what we need
-        for location in new_sequence_to_insert:
-            if index_to_start_extraction < index_of_end_extraction:
-                index_to_insert_on = index_to_start_extraction
-            else:
-                index_to_insert_on = len(self.route)
-            self.route.add_location(location, index_to_insert_on)
+        new_sequence_to_insert.reverse()
+        if index_to_start_extraction < index_of_end_extraction:
+            index_to_insert_on = index_to_start_extraction
+        else:
+            index_to_insert_on = len(self.route)
+        self.route.add_multiple_locations(new_sequence_to_insert, index_to_insert_on)
 
     def improve_2_opt(self, src_loc_of_link, dest_loc_of_link):
         index_of_dest = self.route.sequence_list.index(dest_loc_of_link)

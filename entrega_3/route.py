@@ -19,11 +19,36 @@ class Route:
         self.sequence_list.insert(index, location)
         self.total_distance += self.get_total_distance_of_location(index)
 
+    def add_multiple_locations(self, list_of_locations_ordered, index=None):
+        if index is None or index > len(self):
+            index = len(self) - 1
+
+        if len(self) != 0:
+            self.total_distance -= self.get_distance_to_location(index)
+
+        for offset, location in enumerate(list_of_locations_ordered):
+            self.sequence_list.insert(index + offset, location)
+            self.total_distance += self.get_distance_to_location(index + offset)
+        else:
+            self.total_distance += self.get_distance_to_location(index + len(list_of_locations_ordered))
+
     def remove_location(self, location):
         index_of_location = self.sequence_list.index(location)
 
         self.total_distance -= self.get_total_distance_of_location(index_of_location)
         self.sequence_list.remove(location)
+
+        if len(self) != 0:
+            self.total_distance += self.get_distance_to_location(index_of_location)
+
+    def remove_multiple_location_sequenced(self, list_of_locations):
+        index_of_location = self.sequence_list.index(list_of_locations[0])
+
+        # plus 1 because it is the remaining extra, that we add at the end.
+        for offset in range(len(list_of_locations) + 1):
+            self.total_distance -= self.get_distance_to_location(index_of_location + offset)
+        for location in list_of_locations:
+            self.sequence_list.remove(location)
 
         if len(self) != 0:
             self.total_distance += self.get_distance_to_location(index_of_location)
@@ -45,6 +70,12 @@ class Route:
         total_distance = 0
         total_distance += self.get_distance_to_location(location_index)
         total_distance += self.get_distance_from_location(location_index)
+        return total_distance
+
+    def calculate_total_travel_distance(self):
+        total_distance = 0
+        for offset in range(len(self)):
+            total_distance += self.get_distance_to_location(offset)
         return total_distance
 
     def get_loc_with_most_travel_times(self, exclude_locations=None):
@@ -110,7 +141,7 @@ class Route:
         for location in sequence_list:
             self.add_location(location)
 
-    def plot_route(self, save_path):
+    def plot_route(self, save_path=None):
         position_x_in_route = []
         position_y_in_route = []
         for location in self.sequence_list:

@@ -1,4 +1,5 @@
 import math
+
 import numpy as np
 
 from route import Route
@@ -8,6 +9,7 @@ class Location:
     count_of_locations = 0
 
     locations_list = []
+    locations_by_id = {}
 
     def __init__(self, x, y, add_to_static=True):
         self.id = Location.count_of_locations
@@ -20,6 +22,7 @@ class Location:
         Location.count_of_locations += 1
         if add_to_static:
             Location.locations_list.append(self)
+            Location.locations_by_id[self.id] = self
 
     def distance_to_loc(self, other_location=None):
         if other_location is not None:
