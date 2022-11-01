@@ -56,7 +56,7 @@ class Neighbours:
         self.route.remove_location(location_to_improve)
         self.route.add_location(location_to_improve, index=best_position)
 
-    def improve_by_2_opt(self):
+    def improve_by_2_opt(self, max_number_of_loops=None):
         start_time = time.time()
         available_time = self.get_available_time()
         improve = True
@@ -66,7 +66,8 @@ class Neighbours:
             original_obj_val = self.route.get_total_distance_travel()
             for start_index in range(len(self.route) - 1):
                 for end_index in range(start_index + 1, len(self.route)):
-                    self.improve_2_opt_by_index(start_index, end_index)
+                    if start_index < end_index:
+                        self.improve_2_opt_by_index(start_index, end_index)
             final_obj_val = self.route.get_total_distance_travel()
             improve = final_obj_val < original_obj_val
 

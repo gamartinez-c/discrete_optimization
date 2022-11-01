@@ -30,8 +30,8 @@ def solve_it(input_data_list):
         approach_neighbours = 'simulated_annealing'
 
     if approach_neighbours in ['simple', 'simulated_annealing']:
-        amount_of_random = 1
-        amount_of_best_sol_to_imp, amount_of_bad_sol_to_imp = (1, 0)
+        amount_of_random = 8
+        amount_of_best_sol_to_imp, amount_of_bad_sol_to_imp = (2, 0)
     else:
         amount_of_random = 100 if len(location_list) < 1000 else 5
         if len(location_list) < 1000:
@@ -42,12 +42,12 @@ def solve_it(input_data_list):
             amount_of_best_sol_to_imp, amount_of_bad_sol_to_imp = (1, 1)
     amount_of_solutions_to_improve = amount_of_best_sol_to_imp + amount_of_bad_sol_to_imp
     first_locations_approachs = ['origin'] + ['random']*amount_of_random
-    greedy_heuristics_approaches = ['min_distance'] + ['mst']*1 + ['clockwise']*0 + ['cluster_1']*0 + ['cluster_2']*0
+    greedy_heuristics_approaches = ['min_distance'] + ['mst']*0 + ['clockwise']*0 + ['cluster_1']*0 + ['cluster_2']*0
 
     logging.info('Finish loading Nodes.')
 
     for location in location_list:
-        location.sort_location_list_by_distance(location_list)
+        location.sort_location_list_by_distance()
 
     logging.info('Finish sorting Nodes.')
     start_time_initial_attribution = time.time()

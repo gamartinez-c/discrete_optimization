@@ -64,7 +64,7 @@ class Solution:
             neighbour = Neighbours(self.route)
             self.neighbour_iterations = neighbour.improve_by_2_opt()
         elif approach == 'simulated_annealing':
-            neighbour = SimulatedAnnealing(self.route, 150, 'swap', 0.99)
+            neighbour = SimulatedAnnealing(self.route, 25, 'swap', 0.99997, 200000)
             self.neighbour_iterations = neighbour.improve()
         else:
             neighbour = Neighbours(self.route)

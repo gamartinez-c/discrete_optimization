@@ -42,7 +42,8 @@ class Location:
 
     def get_nearest_location(self, locations_list, exclude_location_list=None):
         return_location = None
-        for location in self.location_order_by_distance:
+        for location_id in self.location_order_by_distance:
+            location = Location.locations_by_id[location_id]
             if location not in exclude_location_list and location in locations_list:
                 return location
         return return_location
@@ -53,12 +54,12 @@ class Location:
         ang1 = (-np.arctan2(relative_x, relative_y) + np.pi) % (np.pi*2)
         return np.rad2deg(ang1)
 
-    def sort_location_list_by_distance(self, location_order_by_id):
-        self.location_order_by_distance = self.get_sorted_list_of_loc(self.location_order_by_distance)
+    def sort_location_list_by_distance(self):
+        self.location_order_by_distance = [loc.id for loc in self.get_sorted_list_of_loc()]
 
-    def get_sorted_list_of_loc(self, list_of_locations):
-        list_of_locations.sort(key=lambda loc: self.distance_to_loc(loc))
-        return list_of_locations
+    def get_sorted_list_of_loc(self):
+        Location.locations_list.sort(key=lambda loc: self.distance_to_loc(loc))
+        return Location.locations_list
 
     def __str__(self):
         return str(self.id)
@@ -85,12 +86,7 @@ class Location:
         Location.count_of_locations = 0
         for locations_line in position_list:
             parts = locations_line.split()
-            new_location = Location(float(parts[0]), float(parts[1]))
-
-            for location in Location.locations_list:
-                if location != new_location:
-                    location.location_order_by_distance.append(new_location)
-                    new_location.location_order_by_distance.append(location)
+            Location(float(parts[0]), float(parts[1]))
         location_list = Location.locations_list.copy()
         return location_list
 
