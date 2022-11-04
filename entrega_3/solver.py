@@ -12,6 +12,8 @@ from location import Location
 logging.basicConfig(level=logging.INFO, format="%(asctime)s --- %(message)s")
 sys.setrecursionlimit(20000)
 
+PARALLEL_RUN = False
+
 
 def solve_it(input_data_list):
     logging.info("#"*60)
@@ -26,12 +28,19 @@ def solve_it(input_data_list):
     location_list = Location.load_locations(lines[1:-1])
 
     approach_neighbours = 'simple'
-    if len(location_list) < 500:
+    if len(location_list) < 200000:
         approach_neighbours = 'simulated_annealing'
 
     if approach_neighbours in ['simple', 'simulated_annealing']:
-        amount_of_random = 8
-        amount_of_best_sol_to_imp, amount_of_bad_sol_to_imp = (2, 0)
+        if len(location_list) < 500:
+            amount_of_random = 19
+            amount_of_best_sol_to_imp, amount_of_bad_sol_to_imp = (2, 0)
+        elif len(location_list) < 1000:
+            amount_of_random = 7
+            amount_of_best_sol_to_imp, amount_of_bad_sol_to_imp = (2, 0)
+        else:
+            amount_of_random = 3
+            amount_of_best_sol_to_imp, amount_of_bad_sol_to_imp = (2, 0)
     else:
         amount_of_random = 100 if len(location_list) < 1000 else 5
         if len(location_list) < 1000:
@@ -73,13 +82,24 @@ def solve_it(input_data_list):
     solutions_to_improve = Solution.get_solutions_to_improve_list(amount_of_best_sol_to_imp, amount_of_bad_sol_to_imp, greedy_heuristics_approaches, amount_of_solutions_to_improve)
     logging.info('Solutions have been picked')
 
-    for solution in solutions_to_improve:
-        solution.improve_solution(approach_neighbours)
+    if PARALLEL_RUN:
+        result_solutions = Solution.parallel_improvement_run(solutions_to_improve, approach_neighbours)
+    else:
+        result_solutions = []
+        for solution in solutions_to_improve:
+            solution.improve_solution(approach_neighbours, plot=True)
+            result_solutions.append(solution)
+
+    for sol in result_solutions:
+        sol.print_solution_path()
+    Solution.list_of_solutions.extend(result_solutions)
 
     end_neighbours = time.time()
     logging.info('Neighbour Time: ' + str(round(end_neighbours - end_initial_solution, 2)))
 
-    best_solution = Solution.get_best_solution()
+    # Best Solution improvement.
+    best_solution: Solution = Solution.get_best_solution()
+    best_solution.improve_solution('simple')
     best_solution.plot('charts/' + str(lines[0]) + '.png')
 
     # Output sequence
@@ -111,12 +131,11 @@ if __name__ == '__main__':
         logging.info('Start with: ' + file_location + '.')  # , end=' ')
         sys.stdout.flush()
         lines = input_data.split('\n')
-        if int(lines[0]) <= 30000:
-            solution_output = solve_it(input_data)
-            # print(solution_output)
-            end = time.time()
-            time_list.append(end - start)
-            problem_size.append(int(lines[0]))
+        solution_output = solve_it(input_data)
+        # print(solution_output)
+        end = time.time()
+        time_list.append(end - start)
+        problem_size.append(int(lines[0]))
 
     # plt.scatter(problem_size, time_list)
     # plt.show()

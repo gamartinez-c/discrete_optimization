@@ -10,7 +10,7 @@ from improvements.neighbours import Neighbours
 
 class SimulatedAnnealing(Neighbours):
 
-    def __init__(self, route, initial_temperature, type_of_swap, cooldown_factor, max_iterations):
+    def __init__(self, route, type_of_swap, initial_temperature, cooldown_factor, max_iterations):
         super().__init__(route)
         self.initial_temperature = initial_temperature
         self.reheat_temperature = initial_temperature
@@ -28,7 +28,7 @@ class SimulatedAnnealing(Neighbours):
 
         self.type_of_swap = type_of_swap
 
-    def improve(self):
+    def improve(self, plot):
         self.iteration_num = 0
         should_keep_on_looping = True
         start_time = time.time()
@@ -38,29 +38,32 @@ class SimulatedAnnealing(Neighbours):
             initial_obj_value = self.route.get_total_distance_travel()
             initial_route = self.route.copy()
             random_index_node_1, random_index_node_2 = random.sample(range(0, len(self.route)), 2)
-            self.make_2_opt_movement_by_index(random_index_node_1, random_index_node_2)
-            final_obj_value = self.route.get_total_distance_travel()
+            # FIXME: WHAT IF NODES ARE PREETY NEAR
+
+            swap_benefit = self.calculate_2_opt_movement_benefit(random_index_node_1, random_index_node_2)
+            final_obj_value = initial_obj_value + swap_benefit
             random_prob_value = random.random()
             prob_of_acceptance = self.calculate_acceptance_prob(initial_obj_value, final_obj_value)
-            if random_prob_value > prob_of_acceptance:
-                self.route = initial_route
+            if random_prob_value <= prob_of_acceptance:
+                self.make_2_opt_movement_by_index(random_index_node_1, random_index_node_2)
 
-            initial_obj_value = self.route.get_total_distance_travel()
-            initial_route = self.route.copy()
-            random_index_node_1, random_index_node_2 = random.sample(range(0, len(self.route)), 2)
-            self.swap_2_index(random_index_node_1, random_index_node_2)
-            final_obj_value = self.route.get_total_distance_travel()
-            if final_obj_value > initial_obj_value:
-                self.route = initial_route
+            # initial_obj_value = self.route.get_total_distance_travel()
+            # initial_route = self.route.copy()
+            # random_index_node_1, random_index_node_2 = random.sample(range(0, len(self.route)), 2)
+            # # FIXME: Need to precalculate
+            # self.swap_2_index(random_index_node_1, random_index_node_2)
+            # final_obj_value = self.route.get_total_distance_travel()
+            # if final_obj_value > initial_obj_value:
+            #     self.route = initial_route
 
             if best_route.get_total_distance_travel() > self.route.get_total_distance_travel():
                 best_route = self.route.copy()
 
             self.store_records(amount_of_iterations)
             # self.check_for_reheat(amount_of_iterations)
-            # logging.info("Number of iterations: " + str(amount_of_iterations) + ", Obj value: " + str(self.route.get_total_distance_travel()))
-            #if (amount_of_iterations % 50000) == 0:
-            #    self.plot_data()
+            if (amount_of_iterations % 10000) == 0 and plot:
+                logging.info("Number of iterations: " + str(amount_of_iterations) + ", Obj value: " + str(self.route.get_total_distance_travel()))
+                # self.plot_data()
 
             self.decrease_temp()
             self.iteration_num += 1
@@ -68,7 +71,8 @@ class SimulatedAnnealing(Neighbours):
             running_time = time.time() - start_time
             should_keep_on_looping = self.should_keep_on_looping(running_time, amount_of_iterations)
 
-        # self.plot_data()
+        if plot:
+            self.plot_data()
         self.route = best_route
         return {'Simulated annealing': amount_of_iterations}
 
@@ -127,7 +131,6 @@ class SimulatedAnnealing(Neighbours):
 
     def increase_temp(self):
         self.current_temperature += self.reheat_temperature
-
 
     def calculate_acceptance_prob(self, initial_obj_value, final_obj_value):
         exponential_value = min(((initial_obj_value - final_obj_value)/self.current_temperature), 0)

@@ -1,5 +1,6 @@
 import random
 import logging
+from multiprocessing import Pool
 
 from improvements.neighbours import Neighbours
 from improvements.simulated_annealing import SimulatedAnnealing
@@ -59,13 +60,26 @@ class Solution:
 
         self.value_without_neighbours = self.get_obj_value()
 
-    def improve_solution(self, approach):
+    def improve_solution(self, approach, plot=False):
         if approach == 'simple':
             neighbour = Neighbours(self.route)
             self.neighbour_iterations = neighbour.improve_by_2_opt()
         elif approach == 'simulated_annealing':
-            neighbour = SimulatedAnnealing(self.route, 25, 'swap', 0.99997, 200000)
-            self.neighbour_iterations = neighbour.improve()
+            amount_of_nodes = len(self.route)
+            if amount_of_nodes < 100:
+                init_temp, cooldown_rate, max_iterations = 25, 0.99998, 400000
+            elif amount_of_nodes < 200:
+                init_temp, cooldown_rate, max_iterations = 200, 0.99998, 400000
+            elif amount_of_nodes < 500:
+                init_temp, cooldown_rate, max_iterations = 200, 0.99998, 500000
+            elif amount_of_nodes < 1000:
+                init_temp, cooldown_rate, max_iterations = 50, 0.999985, 700000
+            elif amount_of_nodes < 2000:
+                init_temp, cooldown_rate, max_iterations = 25, 0.99999, 1500000
+            else:
+                init_temp, cooldown_rate, max_iterations = 25, 0.99999, 1500000
+            neighbour = SimulatedAnnealing(self.route, 'swap', init_temp, cooldown_rate, max_iterations)
+            self.neighbour_iterations = neighbour.improve(True if len(self.route) < 333000 else False)
         else:
             neighbour = Neighbours(self.route)
             self.neighbour_iterations = neighbour.best_improvement()
@@ -138,3 +152,16 @@ class Solution:
             solutions_to_improve.extend(solutions)
 
         return solutions_to_improve
+
+    @staticmethod
+    def improve_for_solution(solution, approach):
+        solution.improve_solution(approach)
+        return solution
+
+    @staticmethod
+    def parallel_improvement_run(solutions_to_improve, approach_neighbours):
+        with Pool() as pool:
+            results_solutions_list = pool.starmap(Solution.improve_for_solution, [(sol, approach_neighbours) for sol in solutions_to_improve])
+        return results_solutions_list
+        # for solution in solutions_to_improve:
+        #     solution.improve_solution(approach_neighbours)
