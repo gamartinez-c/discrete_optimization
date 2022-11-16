@@ -41,7 +41,7 @@ class SimulatedAnnealing(Neighbours):
             # FIXME: WHAT IF NODES ARE PREETY NEAR
 
             swap_benefit = self.calculate_2_opt_movement_benefit(random_index_node_1, random_index_node_2)
-            final_obj_value = initial_obj_value + swap_benefit
+            final_obj_value = initial_obj_value - swap_benefit
             random_prob_value = random.random()
             prob_of_acceptance = self.calculate_acceptance_prob(initial_obj_value, final_obj_value)
             if random_prob_value <= prob_of_acceptance:
@@ -61,7 +61,7 @@ class SimulatedAnnealing(Neighbours):
 
             self.store_records(amount_of_iterations)
             # self.check_for_reheat(amount_of_iterations)
-            if (amount_of_iterations % 10000) == 0 and plot:
+            if (amount_of_iterations % 20000) == 0 and plot:
                 logging.info("Number of iterations: " + str(amount_of_iterations) + ", Obj value: " + str(self.route.get_total_distance_travel()))
                 # self.plot_data()
 

@@ -12,8 +12,6 @@ from location import Location
 logging.basicConfig(level=logging.INFO, format="%(asctime)s --- %(message)s")
 sys.setrecursionlimit(20000)
 
-PARALLEL_RUN = False
-
 
 def solve_it(input_data_list):
     logging.info("#"*60)
@@ -27,6 +25,10 @@ def solve_it(input_data_list):
     logging.info("Amount of Nodes: " + str(lines[0]))
     location_list = Location.load_locations(lines[1:-1])
 
+    PARALLEL_RUN = True
+    if len(location_list) > 30000:
+        PARALLEL_RUN = False
+
     approach_neighbours = 'simple'
     if len(location_list) < 200000:
         approach_neighbours = 'simulated_annealing'
@@ -38,8 +40,11 @@ def solve_it(input_data_list):
         elif len(location_list) < 1000:
             amount_of_random = 7
             amount_of_best_sol_to_imp, amount_of_bad_sol_to_imp = (2, 0)
-        else:
+        elif len(location_list) < 5000:
             amount_of_random = 3
+            amount_of_best_sol_to_imp, amount_of_bad_sol_to_imp = (2, 0)
+        else:
+            amount_of_random = 1
             amount_of_best_sol_to_imp, amount_of_bad_sol_to_imp = (2, 0)
     else:
         amount_of_random = 100 if len(location_list) < 1000 else 5

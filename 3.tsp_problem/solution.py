@@ -79,7 +79,7 @@ class Solution:
             else:
                 init_temp, cooldown_rate, max_iterations = 25, 0.99999, 1500000
             neighbour = SimulatedAnnealing(self.route, 'swap', init_temp, cooldown_rate, max_iterations)
-            self.neighbour_iterations = neighbour.improve(True if len(self.route) < 333000 else False)
+            self.neighbour_iterations = neighbour.improve(True if len(self.route) > 333000 else False)
         else:
             neighbour = Neighbours(self.route)
             self.neighbour_iterations = neighbour.best_improvement()
