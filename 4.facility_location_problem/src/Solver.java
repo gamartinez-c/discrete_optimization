@@ -47,10 +47,10 @@ public class Solver {
             String distributionCenterData = lines.get(indexInInput);
             String[] parts = distributionCenterData.split("\\s+");
 
-            double x = Double.parseDouble(parts[0]);
-            double y = Double.parseDouble(parts[1]);
-            double capacity = Double.parseDouble(parts[2]);
-            double setupCost = Double.parseDouble(parts[3]);
+            double setupCost = Double.parseDouble(parts[0]);
+            double capacity = Double.parseDouble(parts[1]);
+            double x = Double.parseDouble(parts[2]);
+            double y = Double.parseDouble(parts[3]);
             distributionCenters.add(new DistributionCenter(x,y,capacity, setupCost, i));
         }
 
@@ -60,16 +60,17 @@ public class Solver {
             String customerData = lines.get(indexInInput);
             String[] parts = customerData.split("\\s+");
 
-            double x = Double.parseDouble(parts[0]);
-            double y = Double.parseDouble(parts[1]);
-            double demand = Double.parseDouble(parts[2]);
+            double demand = Double.parseDouble(parts[0]);
+            double x = Double.parseDouble(parts[1]);
+            double y = Double.parseDouble(parts[2]);
             customers.add(new Customers(x, y, demand, i));
         }
 
         GreedySolver greedySolver = new GreedySolver(distributionCenters, customers);
         greedySolver.solve();
+        String outputResult = greedySolver.assignation.getSolutionInOutputFormat();
 
-        System.out.println("Done");
+        System.out.println(outputResult);
 
 //        prepare the solution in the specified output format
 //        System.out.println(value+" 0");

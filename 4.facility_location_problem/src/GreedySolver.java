@@ -1,5 +1,5 @@
 import java.util.ArrayList;
-import java.util.HashMap;
+import java.util.HashSet;
 
 public class GreedySolver {
 
@@ -10,10 +10,7 @@ public class GreedySolver {
     public GreedySolver(ArrayList<DistributionCenter> distributionCenters, ArrayList<Customers> customers){
         this.distributionCenters = distributionCenters;
         this.customers = customers;
-        this.assignationMap = new HashMap<>();
-        for (DistributionCenter distributionCenter: this.distributionCenters){
-            this.assignationMap.put(distributionCenter, new ArrayList<>());
-        }
+        this.assignation = new Assignation();
     }
 
     public void solve(){
@@ -21,37 +18,36 @@ public class GreedySolver {
         ArrayList<DistributionCenter> orderDistributionCenters = getDistributionCentersOrderBySetupCost();
 
         for (Customers customer: orderOfCostumers){
-            boolean customerAdded = false;
+            DistributionCenter selectedDistributionCenter = null;
+            double selectionCost = Double.POSITIVE_INFINITY;
+//            System.out.print("Customer:");
+//            System.out.println(customer);
             for (DistributionCenter distributionCenter: orderDistributionCenters){
-                if (this.distributionCenterCurrentCapacity(distributionCenter) >= customer.demand){
-                    this.assignationMap.get(distributionCenter).add(customer);
-                    customerAdded = true;
-                    break;
+                double availableCapacity = this.assignation.availableCapacity(distributionCenter);
+                double assignationCost = this.assignation.getCostOfAssignation(customer, distributionCenter);
+//                System.out.print("    DistCent");
+//                System.out.print(distributionCenter);
+//                System.out.println(", Available Capacity: " + availableCapacity + ", AssCost: " + assignationCost);
+                if (availableCapacity >= customer.demand && assignationCost < selectionCost){
+                    selectedDistributionCenter = distributionCenter;
+                    selectionCost = assignationCost;
                 }
             }
-            if (!customerAdded){
-                DistributionCenter  distributionCenter = getDistributionCenterWithMostAvailableCapacity();
-                this.assignationMap.get(distributionCenter).add(customer);
+            if(selectedDistributionCenter == null) {
+                selectedDistributionCenter = getDistributionCenterWithMostAvailableCapacity();
             }
+//            System.out.println("        Selected: " + selectedDistributionCenter.index);
+            this.assignation.addCostumerToDistributor(customer, selectedDistributionCenter);
         }
-    }
-
-    // FIXME:This should be in a class solution
-    public double distributionCenterCurrentCapacity(DistributionCenter distributionCenter){
-        double capacityUsed = 0.0;
-        for (Customers customers: assignationMap.get(distributionCenter)){
-            capacityUsed += customers.demand;
-        }
-        return capacityUsed;
     }
 
     public DistributionCenter getDistributionCenterWithMostAvailableCapacity(){
         DistributionCenter selectedDistributionCenter = distributionCenters.get(0);
-        double distributionCenterAvailability = distributionCenterCurrentCapacity(selectedDistributionCenter);
+        double distributionCenterAvailability = this.assignation.availableCapacity(selectedDistributionCenter);
         for (DistributionCenter distributionCenter: distributionCenters){
-            if (distributionCenterCurrentCapacity(distributionCenter) > distributionCenterAvailability){
+            if (this.assignation.availableCapacity(distributionCenter) > distributionCenterAvailability){
                 selectedDistributionCenter = distributionCenter;
-                distributionCenterAvailability = distributionCenterCurrentCapacity(selectedDistributionCenter);
+                distributionCenterAvailability = this.assignation.availableCapacity(selectedDistributionCenter);
             }
         }
         return selectedDistributionCenter;
@@ -59,31 +55,36 @@ public class GreedySolver {
 
 
     public ArrayList<Customers> getCostumersOrderByDemand(){
-        ArrayList<Customers> orderList = new ArrayList<>();
-        while (orderList.size() != this.customers.size()){
-            Customers customerToAdd = this.customers.get(0);
-            for (Customers customer: this.customers){
-                if (customerToAdd.demand < customer.demand ){
-                    customerToAdd = customer;
+        ArrayList<Customers> orderList = new ArrayList<>(customers);
+        for (int i = 0; i < orderList.size() - 1; i++){
+            for (int j = i; j < orderList.size(); j++){
+                if (orderList.get(i).demand < orderList.get(j).demand){
+                    Customers customerI = orderList.get(i);
+                    Customers customerJ = orderList.get(j);
+                    orderList.remove(customerI);
+                    orderList.remove(customerJ);
+                    orderList.add(i, customerJ);
+                    orderList.add(j, customerI);
                 }
-                orderList.add(customerToAdd);
             }
         }
         return orderList;
     }
 
     public ArrayList<DistributionCenter> getDistributionCentersOrderBySetupCost(){
-        ArrayList<DistributionCenter> orderList = new ArrayList<>();
-        while (orderList.size() != this.distributionCenters.size()){
-            DistributionCenter distributionCenterToAdd = this.distributionCenters.get(0);
-            for (DistributionCenter distributionCenter: this.distributionCenters){
-                if (distributionCenterToAdd.setupCost < distributionCenter.setupCost ){
-                    distributionCenterToAdd = distributionCenter;
+        ArrayList<DistributionCenter> orderList = new ArrayList<>(this.distributionCenters);
+        for (int i = 0; i < orderList.size() - 1; i++){
+            for (int j = i; j < orderList.size(); j++){
+                if (orderList.get(i).setupCost > orderList.get(j).setupCost){
+                    DistributionCenter distributionCenterI = orderList.get(i);
+                    DistributionCenter distributionCenterJ = orderList.get(j);
+                    orderList.remove(distributionCenterI);
+                    orderList.remove(distributionCenterJ);
+                    orderList.add(i, distributionCenterJ);
+                    orderList.add(j, distributionCenterI);
                 }
-                orderList.add(distributionCenterToAdd);
             }
         }
         return orderList;
     }
-
 }

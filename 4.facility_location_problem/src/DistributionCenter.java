@@ -9,5 +9,10 @@ public class DistributionCenter extends Node{
         this.setupCost = setupCost;
         this.index = index;
     }
+
+    @Override
+    public String toString() {
+        return "Id: " + index + ", Capacity:" + capacity + ", SetupCost: " + setupCost;
+    }
 }
 

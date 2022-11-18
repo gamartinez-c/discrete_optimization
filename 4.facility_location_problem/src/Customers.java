@@ -8,4 +8,9 @@ public class Customers extends Node{
         this.demand = demand;
         this.index = index;
     }
+
+    @Override
+    public String toString() {
+        return "Id: " + index + ", Demand:" + demand;
+    }
 }
