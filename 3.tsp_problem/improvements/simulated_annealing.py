@@ -65,6 +65,10 @@ class SimulatedAnnealing(Neighbours):
                 logging.info("Number of iterations: " + str(amount_of_iterations) + ", Obj value: " + str(self.route.get_total_distance_travel()))
                 # self.plot_data()
 
+            if self.iteration_num%300 == 0:
+                route_plot_name = "output_images/solution_progress/" + str(self.iteration_num) + ".jpg"
+                self.route.plot_route(save_path=route_plot_name)
+
             self.decrease_temp()
             self.iteration_num += 1
             amount_of_iterations += 1
